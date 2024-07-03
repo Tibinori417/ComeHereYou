@@ -15,8 +15,8 @@ export default class GameScene extends Phaser.Scene {
     this.score = 0;
 
     // グリッドのサイズを設定
-    this.gridWidth = 500; // 大きめのグリッドサイズに変更
-    this.gridHeight = 500; // 大きめのグリッドサイズに変更
+    this.gridWidth = 50; // 大きめのグリッドサイズに変更
+    this.gridHeight = 50; // 大きめのグリッドサイズに変更
     this.cellSize = 32;
 
     // グリッドの初期化
@@ -59,10 +59,11 @@ export default class GameScene extends Phaser.Scene {
 
   update(time) {
     // キーボード入力に応じたブロックの更新
-    this.blocks.forEach(block => {
-      block.update(time);
-    });
-
+    // this.blocks.forEach(block => {
+    //   block.update(time);
+    // });
+    this.playerBlock.update(time);
+    console.log(this.blocks);
     // カメラの位置に基づいて背景を更新
     this.updateBackground();
 
@@ -82,9 +83,7 @@ export default class GameScene extends Phaser.Scene {
       const gridX = Phaser.Math.Between(0, this.gridWidth - 1);
       const gridY = Phaser.Math.Between(0, this.gridHeight - 1);
       if (!this.grid[gridX][gridY]) {
-        const block = this.add.rectangle(gridX * this.cellSize, gridY * this.cellSize, this.cellSize, this.cellSize, 0xff0000);
-        this.physics.add.existing(block);
-        block.body.immovable = true;
+        const block = new Block(this, gridX, gridY, this.cursors, this.cellSize); // グリッド座標でブロックを作成
         this.otherBlocks.add(block);
         this.grid[gridX][gridY] = block;
       }
