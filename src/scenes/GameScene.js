@@ -59,9 +59,9 @@ export default class GameScene extends Phaser.Scene {
 
   update(time) {
     // キーボード入力に応じたブロックの更新
-    // this.blocks.forEach(block => {
-    //   block.update(time);
-    // });
+    this.blocks.forEach(block => {
+      block.update(time);
+    });
     this.playerBlock.update(time);
     console.log(this.blocks);
     // カメラの位置に基づいて背景を更新
