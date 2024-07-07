@@ -14,7 +14,7 @@ export default class GameScene extends Phaser.Scene {
 
   create() {
     this.score = 0;
-    this.blockCollectionCount = 3;
+    this.blockCollectionCount = 10;
     this.marginGrid = 2;
 
     // グリッドのサイズを設定
@@ -40,9 +40,9 @@ export default class GameScene extends Phaser.Scene {
       ],
       tShape: [
         { x: 0, y: 0 },
-        { x: -1, y: 0 },
         { x: 1, y: 0 },
-        { x: 0, y: 1 }
+        { x: 2, y: 0 },
+        { x: 1, y: 1 }
       ]
     };
 
@@ -107,7 +107,7 @@ export default class GameScene extends Phaser.Scene {
         this.updateCamera();
       }
     }
-    
+
     // カメラの位置に基づいて背景を更新
     this.updateBackground();
     this.updateCamera();
@@ -134,7 +134,6 @@ export default class GameScene extends Phaser.Scene {
 
       const blockCollection = new BlockCollection(this, base, this.cellSize, id, shape);
       this.otherBlockCollections.push(blockCollection);
-      // this.grid[base.x][base.y] = block;  
     }
   }
 
@@ -143,7 +142,7 @@ export default class GameScene extends Phaser.Scene {
     for (let x = 0; x < checkGridCount; x++) {
       for (let y = 0; y < checkGridCount; y++) {
         if (this.grid[base.x + x][base.y + y]) {
-          console.log("a");
+          
           return true;
         }
       }
@@ -153,12 +152,18 @@ export default class GameScene extends Phaser.Scene {
 
   joinBlock(hitGrids) {   // 移動先にある他のブロックを削除し、自分のブロックに合体させる
     hitGrids.forEach( hitGrid => {
-      const joinBlock = this.grid[hitGrid.x][hitGrid.y];
-
-      this.grid[hitGrid.x][hitGrid.y] = null;
-      joinBlock.destroy();
-      
-      this.createBlock(hitGrid.x, hitGrid.y);
+      const hitBlock = this.grid[hitGrid.x][hitGrid.y];
+      if (hitBlock) {
+        const collectionId = hitBlock.id;
+        const collection = this.otherBlockCollections[collectionId];
+        const collectionBlocks = collection.blocks;
+        
+        collection.destroy(this);
+  
+        collectionBlocks.forEach( block => {
+          this.createBlock(block.gridX, block.gridY);
+        });
+      }
     });
   }
 
