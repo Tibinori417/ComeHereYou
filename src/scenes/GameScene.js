@@ -14,13 +14,13 @@ export default class GameScene extends Phaser.Scene {
 
   create() {
     this.score = 0;
-    this.blockCollectionCount = 10;
+    this.blockCollectionCount = 100;
     this.marginGrid = 4;
     this.checkOffset = -2;
 
     // グリッドのサイズを設定
-    this.gridWidth = 50;
-    this.gridHeight = 50;
+    this.gridWidth = 500;
+    this.gridHeight = 500;
     this.cellSize = 32;
 
     // グリッドの初期化
@@ -225,20 +225,26 @@ export default class GameScene extends Phaser.Scene {
       x: center.x / this.cellSize,
       y: center.y / this.cellSize
     };
-    
     const centerGrid = {
       x: Math.floor(center.x / this.cellSize),
       y: Math.floor(center.y / this.cellSize)
     };
-
+    let adjustmentGrid = { x: 0, y: 0 };
+    if (!Number.isInteger(checkGrid.x)) {
+      adjustmentGrid = {
+        x: 1,
+        y: 0
+      };
+    }
+    
     const offsetGrid = this.blocks.map( block => ({
       x: block.gridX - centerGrid.x,
       y: block.gridY - centerGrid.y
     }));
     console.log(centerGrid);
     const rotatedGrid = offsetGrid.map(block => ({
-      x: -block.y,
-      y: block.x
+      x: -block.y + adjustmentGrid.x,
+      y: block.x + adjustmentGrid.y
     }));
 
     this.blocks.forEach( (block, index) => {
