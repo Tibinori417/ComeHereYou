@@ -31,7 +31,7 @@ export default class GameScene extends Phaser.Scene {
       }
     }
 
-    const shapes = {
+    this.shapes = {
       square: [
         { x: 0, y: 0 },
         { x: 1, y: 0 },
@@ -57,7 +57,7 @@ export default class GameScene extends Phaser.Scene {
 
     // ブロックのグループを初期化
     this.blocks = [];
-    this.otherBlocks = []; // 他のブロックのグループ
+    this.otherBlockCollections = []; // 他のブロックのグループ
 
     // 入力のハンドリング
     this.cursors = this.input.keyboard.createCursorKeys();
@@ -107,7 +107,7 @@ export default class GameScene extends Phaser.Scene {
         this.updateCamera();
       }
     }
-
+    
     // カメラの位置に基づいて背景を更新
     this.updateBackground();
     this.updateCamera();
@@ -120,8 +120,10 @@ export default class GameScene extends Phaser.Scene {
   }
 
   createOtherBlocks() {   // 他のブロックをマップ上に生成する
-    for (let i = 0; i < this.blockCollectionCount; i++) {
+    for (let id = 0; id < this.blockCollectionCount; id++) {
       let base;
+      const shapes = [this.shapes.square, this.shapes.tShape];
+      const shape = Phaser.Utils.Array.GetRandom(shapes);
 
       do {
         base = {
@@ -130,9 +132,9 @@ export default class GameScene extends Phaser.Scene {
           };
       } while (this.canCreateBlockCollection(base));
 
-      const block = new Block(this, base.x, base.y, this.cellSize, 0);
-      this.otherBlocks.push(block);
-      this.grid[base.x][base.y] = block;
+      const blockCollection = new BlockCollection(this, base, this.cellSize, id, shape);
+      this.otherBlockCollections.push(blockCollection);
+      // this.grid[base.x][base.y] = block;  
     }
   }
 
@@ -155,7 +157,6 @@ export default class GameScene extends Phaser.Scene {
 
       this.grid[hitGrid.x][hitGrid.y] = null;
       joinBlock.destroy();
-      
       
       this.createBlock(hitGrid.x, hitGrid.y);
     });
