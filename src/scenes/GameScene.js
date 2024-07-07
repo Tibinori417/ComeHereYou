@@ -48,7 +48,7 @@ export default class GameScene extends Phaser.Scene {
     this.playerBlock = this.createBlock(Math.floor(this.gridWidth / 2), Math.floor(this.gridHeight / 2));
 
     // カメラの設定
-    this.cameras.main.startFollow(this.playerBlock, true, 1, 1); // 最初のブロックを追尾
+    this.cameras.main.startFollow(this.playerBlock, true, 0.05, 0.05); // 最初のブロックを追尾
     this.cameras.main.setZoom(1); // 必要に応じてズームを調整
     this.cameras.main.setBounds(0, 0, backgroundWidth, backgroundHeight); // カメラの境界を設定
 
@@ -57,19 +57,42 @@ export default class GameScene extends Phaser.Scene {
   }
 
   update(time) {
-    // キーボード入力に応じたブロックの更新
-    this.blocks.forEach(block => {
-      block.update(time);
-      if (this.grid[block.gridX][block.gridY]) {
-        this.handleCollision(block, this.grid[block.gridX][block.gridY]);
+    const { left, right, up, down } = this.cursors;
+
+    let moveDirection = null;
+    if (left.isDown) {
+      moveDirection = { x: -1, y: 0 };
+    } else if (right.isDown) {
+      moveDirection = { x: 1, y: 0 };
+    } else if (up.isDown) {
+      moveDirection = { x: 0, y: -1 };
+    } else if (down.isDown) {
+      moveDirection = { x: 0, y: 1 };
+    }
+
+    const hitGrids = [];
+
+    if (moveDirection) {
+      // 全ての自分のブロックの行き先グリッドを確認し、他のブロックがあればhitGrid配列に追加
+      this.blocks.forEach(block => {
+        const checkGrid = { x:block.gridX + moveDirection.x, y:block.gridY + moveDirection.y };
+
+        if (this.grid[checkGrid.x][checkGrid.y]) {
+          hitGrids.push({ x: checkGrid.x, y:checkGrid.y });
+        }
+      });
+
+      if (hitGrids.length == 0) {
+        this.moveMyBlock(moveDirection);
+      } else {
+        this.joinBlock(hitGrids);
       }
-    });
-    console.log(this.grid[this.playerBlock.gridX][this.playerBlock.gridY]);
-    console.log(this.playerBlock.gridX, this.playerBlock.gridY);
+      
+    }
+    console.log(hitGrids);
 
     // カメラの位置に基づいて背景を更新
     this.updateBackground();
-
   }
 
   createBlock(gridX, gridY) {
@@ -90,17 +113,23 @@ export default class GameScene extends Phaser.Scene {
     }
   }
 
-  handleCollision(player, otherBlock) {
-    // 他のブロックをプレイヤーの一部にする
-    const otherBlockGridX = otherBlock.gridX;
-    const otherBlockGridY = otherBlock.gridY;
+  joinBlock(hitGrids) {   // 移動先にある他のブロックを削除し、自分のブロックに合体させる
+    hitGrids.forEach( hitGrid => {
+      const joinBlock = this.grid[hitGrid.x][hitGrid.y];
 
-    otherBlock.destroy();
-    this.grid[otherBlockGridX][otherBlockGridY] = null;
-    
-    const gridX = Math.floor(otherBlock.x / this.cellSize);
-    const gridY = Math.floor(otherBlock.y / this.cellSize);
-    this.createBlock(gridX, gridY);
+      joinBlock.destroy();
+      this.grid[hitGrid.x][hitGrid.y] = null;
+      
+      this.createBlock(hitGrid.x, hitGrid.y);
+    });
+  }
+
+  moveMyBlock(moveDirection){
+    this.blocks.forEach( block => {
+      block.gridX = block.gridX + moveDirection.x;
+      block.gridY = block.gridY + moveDirection.y;
+      block.setPosition(block.gridX * this.cellSize, block.gridY * this.cellSize);
+    });
   }
 
   updateBackground() {
