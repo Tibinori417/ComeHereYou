@@ -14,12 +14,13 @@ export default class GameScene extends Phaser.Scene {
 
   create() {
     this.score = 0;
-    this.blockCollectionCount = 1;
+    this.blockCollectionCount = 10;
     this.marginGrid = 4;
+    this.checkOffset = -2;
 
     // グリッドのサイズを設定
-    this.gridWidth = 30; // 大きめのグリッドサイズに変更
-    this.gridHeight = 20; // 大きめのグリッドサイズに変更
+    this.gridWidth = 50;
+    this.gridHeight = 50;
     this.cellSize = 32;
 
     // グリッドの初期化
@@ -87,7 +88,7 @@ export default class GameScene extends Phaser.Scene {
 
     // ブロックのグループを初期化
     this.blocks = [];
-    this.otherBlockCollections = []; // 他のブロックのグループ
+    this.otherBlockCollections = [];
 
     // 入力のハンドリング
     this.cursors = this.input.keyboard.createCursorKeys();
@@ -176,9 +177,9 @@ export default class GameScene extends Phaser.Scene {
   }
 
   canCreateBlockCollection(base) {    // 他のブロックコレクションが生成される範囲に既に他のブロックが存在するか確認し、存在する場合Falseを返す
-    const checkGridCount = 4;
-    for (let x = 0; x < checkGridCount; x++) {
-      for (let y = 0; y < checkGridCount; y++) {
+    const checkGridCount = 5;
+    for (let x = this.checkOffset; x < checkGridCount - this.checkOffset; x++) {
+      for (let y = this.checkOffset; y < checkGridCount - this.checkOffset; y++) {
         if (this.grid[base.x + x][base.y + y]) {
           
           return true;
@@ -219,10 +220,16 @@ export default class GameScene extends Phaser.Scene {
   }
 
   updateCamera() {
-    const totalX = this.blocks.reduce((sum, block) => sum + block.x, 0);
-    const totalY = this.blocks.reduce((sum, block) => sum + block.y, 0);
-    const centerX = totalX / this.blocks.length;
-    const centerY = totalY / this.blocks.length;
+    const minX = Math.min(...this.blocks.map(b => b.x));
+    const minY = Math.min(...this.blocks.map(b => b.y));
+    const maxX = Math.max(...this.blocks.map(b => b.x));
+    const maxY = Math.max(...this.blocks.map(b => b.y));
+    const centerX = (maxX + minX) / 2;
+    const centerY = (maxY + minY) / 2;
+    // const totalX = this.blocks.reduce((sum, block) => sum + block.x, 0);
+    // const totalY = this.blocks.reduce((sum, block) => sum + block.y, 0);
+    // const centerX = totalX / this.blocks.length;
+    // const centerY = totalY / this.blocks.length;
     this.cameras.main.centerOn(centerX, centerY);
   }
 }
