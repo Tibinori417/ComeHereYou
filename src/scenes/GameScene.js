@@ -62,13 +62,12 @@ export default class GameScene extends Phaser.Scene {
     this.blocks.forEach(block => {
       block.update(time);
     });
-    this.playerBlock.update(time);
-    console.log(this.blocks);
+
     // カメラの位置に基づいて背景を更新
     this.updateBackground();
 
     // 他のブロックと接触した際の処理
-    this.physics.overlap(this.playerBlock, this.otherBlocks, this.handleCollision, null, this);
+    this.physics.overlap(this.blocks, this.otherBlocks, this.handleCollision, null, this);
   }
 
   createBlock(gridX, gridY) {
@@ -79,7 +78,7 @@ export default class GameScene extends Phaser.Scene {
   }
 
   createOtherBlocks() {
-    for (let i = 0; i < 1000; i++) {
+    for (let i = 0; i < 100; i++) {
       const gridX = Phaser.Math.Between(0, this.gridWidth - 1);
       const gridY = Phaser.Math.Between(0, this.gridHeight - 1);
       if (!this.grid[gridX][gridY]) {
@@ -96,7 +95,7 @@ export default class GameScene extends Phaser.Scene {
     const gridX = Math.floor(otherBlock.x / this.cellSize);
     const gridY = Math.floor(otherBlock.y / this.cellSize);
     const newBlock = this.createBlock(gridX, gridY);
-    this.playerBlock.setSize(this.playerBlock.width + newBlock.width, this.playerBlock.height + newBlock.height);
+    // this.playerBlock.setSize(this.playerBlock.width + newBlock.width, this.playerBlock.height + newBlock.height);
   }
 
   updateBackground() {

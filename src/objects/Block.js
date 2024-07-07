@@ -9,7 +9,9 @@ export default class Block extends Phaser.Physics.Arcade.Sprite {
     this.cursors = cursors;
     this.cellSize = cellSize;
 
-    this.setDisplaySize(cellSize, cellSize); // キャラクターのサイズをグリッドのサイズと同じにする
+    this.body.setSize(this.cellSize, this.cellSize);
+    this.setDisplaySize(this.cellSize, this.cellSize); // キャラクターのサイズをグリッドのサイズと同じにする
+    console.log(this.body);
 
     this.initialMoveDelay = 300; // 初回の移動と2回目の移動の間の待機時間
     this.repeatMoveDelay = 100; // それ以降の連続移動の待機時間
