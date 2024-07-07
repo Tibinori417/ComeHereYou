@@ -26,11 +26,11 @@ export default class BlockCollection {
 
     rotateShape(shape, times = 0) {       // 90度回転を適用する関数
         return shape.map(block => {
-        for (let i = 0; i < times; i++) {
-            const { x, y } = block;
-            block = { x: -y, y: x };
-        }
-        return block;
+            for (let i = 0; i < times; i++) {
+                const { x, y } = block;
+                block = { x: -y, y: x };
+            }
+            return block;
         });
     }
 

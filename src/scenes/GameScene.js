@@ -105,7 +105,7 @@ export default class GameScene extends Phaser.Scene {
   }
 
   update(time) {
-    const { left, right, up, down } = this.cursors;
+    const { left, right, up, down, space } = this.cursors;
 
     let moveDirection = null;
     if (left.isDown) {
@@ -123,7 +123,10 @@ export default class GameScene extends Phaser.Scene {
     if (moveDirection) {
       // 全ての自分のブロックの行き先グリッドを確認し、他のブロックがあればhitGrid配列に追加
       this.blocks.forEach(block => {
-        const checkGrid = { x:block.gridX + moveDirection.x, y:block.gridY + moveDirection.y };
+        const checkGrid = {
+          x:block.gridX + moveDirection.x,
+          y:block.gridY + moveDirection.y
+        };
 
         if (this.grid[checkGrid.x][checkGrid.y]) {
           hitGrids.push({ x: checkGrid.x, y:checkGrid.y });
@@ -138,6 +141,8 @@ export default class GameScene extends Phaser.Scene {
         this.updateCamera();
       }
     }
+
+    if (space.isDown) this.rotateMyBlock();
 
     // カメラの位置に基づいて背景を更新
     this.updateBackground();
@@ -214,22 +219,56 @@ export default class GameScene extends Phaser.Scene {
     });
   }
 
+  rotateMyBlock(){
+    const center = this.outputCenter();
+    const checkGrid = {
+      x: center.x / this.cellSize,
+      y: center.y / this.cellSize
+    };
+    
+    const centerGrid = {
+      x: Math.floor(center.x / this.cellSize),
+      y: Math.floor(center.y / this.cellSize)
+    };
+
+    const offsetGrid = this.blocks.map( block => ({
+      x: block.gridX - centerGrid.x,
+      y: block.gridY - centerGrid.y
+    }));
+    console.log(centerGrid);
+    const rotatedGrid = offsetGrid.map(block => ({
+      x: -block.y,
+      y: block.x
+    }));
+
+    this.blocks.forEach( (block, index) => {
+      block.gridX = centerGrid.x + rotatedGrid[index].x;
+      block.gridY = centerGrid.y + rotatedGrid[index].y;
+      block.setPosition(block.gridX * this.cellSize, block.gridY * this.cellSize);
+    });
+  }
+
   updateBackground() {
     const camera = this.cameras.main;
     this.background.setTilePosition(camera.scrollX, camera.scrollY);
   }
 
   updateCamera() {
+    const center = this.outputCenter();
+    this.cameras.main.centerOn(center.x, center.y);
+  }
+
+  outputCenter() {
     const minX = Math.min(...this.blocks.map(b => b.x));
     const minY = Math.min(...this.blocks.map(b => b.y));
     const maxX = Math.max(...this.blocks.map(b => b.x));
     const maxY = Math.max(...this.blocks.map(b => b.y));
     const centerX = (maxX + minX) / 2;
     const centerY = (maxY + minY) / 2;
-    // const totalX = this.blocks.reduce((sum, block) => sum + block.x, 0);
-    // const totalY = this.blocks.reduce((sum, block) => sum + block.y, 0);
-    // const centerX = totalX / this.blocks.length;
-    // const centerY = totalY / this.blocks.length;
-    this.cameras.main.centerOn(centerX, centerY);
+
+    return {
+      x: centerX,
+      y: centerY
+    };
   }
 }
