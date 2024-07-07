@@ -13,13 +13,6 @@ const config = {
     autoCenter: Phaser.Scale.NO_CENTER,
   },
   scene: [GameScene],
-  physics: {
-    default: 'arcade',
-    arcade: {
-      gravity: { y: 0 },
-      debug: true
-    }
-  },
   audio: {
     disableWebAudio: false
   },

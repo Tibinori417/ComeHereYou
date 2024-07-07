@@ -1,15 +1,13 @@
-export default class Block extends Phaser.Physics.Arcade.Sprite {
+export default class Block extends Phaser.GameObjects.Sprite {
   constructor(scene, gridX, gridY, cursors, cellSize) {
     super(scene, gridX * cellSize, gridY * cellSize, 'block');
     scene.add.existing(this);
-    scene.physics.add.existing(this);
 
     this.gridX = gridX;
     this.gridY = gridY;
     this.cursors = cursors;
     this.cellSize = cellSize;
 
-    this.body.setSize(this.cellSize, this.cellSize);
     this.setDisplaySize(this.cellSize, this.cellSize); // キャラクターのサイズをグリッドのサイズと同じにする
 
     this.initialMoveDelay = 300; // 初回の移動と2回目の移動の間の待機時間

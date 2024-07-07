@@ -39,7 +39,7 @@ export default class GameScene extends Phaser.Scene {
 
     // ブロックのグループを初期化
     this.blocks = [];
-    this.otherBlocks = this.physics.add.group(); // 他のブロックのグループ
+    this.otherBlocks = []; // 他のブロックのグループ
 
     // 入力のハンドリング
     this.cursors = this.input.keyboard.createCursorKeys();
@@ -51,7 +51,6 @@ export default class GameScene extends Phaser.Scene {
     this.cameras.main.startFollow(this.playerBlock, true, 1, 1); // 最初のブロックを追尾
     this.cameras.main.setZoom(1); // 必要に応じてズームを調整
     this.cameras.main.setBounds(0, 0, backgroundWidth, backgroundHeight); // カメラの境界を設定
-    this.physics.world.setBounds(0, 0, backgroundWidth, backgroundHeight); // ワールドの境界を設定
 
     // 他のブロックをマップ上に配置
     this.createOtherBlocks();
@@ -61,20 +60,21 @@ export default class GameScene extends Phaser.Scene {
     // キーボード入力に応じたブロックの更新
     this.blocks.forEach(block => {
       block.update(time);
+      if (this.grid[block.gridX][block.gridY]) {
+        this.handleCollision(block, this.grid[block.gridX][block.gridY]);
+      }
     });
     console.log(this.grid[this.playerBlock.gridX][this.playerBlock.gridY]);
     console.log(this.playerBlock.gridX, this.playerBlock.gridY);
+
     // カメラの位置に基づいて背景を更新
     this.updateBackground();
 
-    // 他のブロックと接触した際の処理
-    this.physics.overlap(this.blocks, this.otherBlocks, this.handleCollision, null, this);
   }
 
   createBlock(gridX, gridY) {
     const block = new Block(this, gridX, gridY, this.cursors, this.cellSize); // グリッド座標でブロックを作成
     this.blocks.push(block);
-    // this.grid[gridX][gridY] = block;
     return block;
   }
 
@@ -84,7 +84,7 @@ export default class GameScene extends Phaser.Scene {
       const gridY = Phaser.Math.Between(0, this.gridHeight - 1);
       if (!this.grid[gridX][gridY]) {
         const block = new Block(this, gridX, gridY, this.cursors, this.cellSize); // グリッド座標でブロックを作成
-        this.otherBlocks.add(block);
+        this.otherBlocks.push(block);
         this.grid[gridX][gridY] = block;
       }
     }
@@ -94,6 +94,7 @@ export default class GameScene extends Phaser.Scene {
     // 他のブロックをプレイヤーの一部にする
     const otherBlockGridX = otherBlock.gridX;
     const otherBlockGridY = otherBlock.gridY;
+
     otherBlock.destroy();
     this.grid[otherBlockGridX][otherBlockGridY] = null;
     
