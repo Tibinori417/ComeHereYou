@@ -14,8 +14,8 @@ export default class GameScene extends Phaser.Scene {
 
   create() {
     this.score = 0;
-    this.blockCollectionCount = 10;
-    this.marginGrid = 2;
+    this.blockCollectionCount = 1;
+    this.marginGrid = 4;
 
     // グリッドのサイズを設定
     this.gridWidth = 30; // 大きめのグリッドサイズに変更
@@ -43,6 +43,36 @@ export default class GameScene extends Phaser.Scene {
         { x: 1, y: 0 },
         { x: 2, y: 0 },
         { x: 1, y: 1 }
+      ],
+      zShape1: [
+        { x: 0, y: 0 },
+        { x: 0, y: 1 },
+        { x: 1, y: 1 },
+        { x: 1, y: 2 }
+      ],
+      zShape2: [
+        { x: 1, y: 0 },
+        { x: 1, y: 1 },
+        { x: 0, y: 1 },
+        { x: 0, y: 2 }
+      ],
+      iShape: [
+        { x: 0, y: 0 },
+        { x: 0, y: 1 },
+        { x: 0, y: 2 },
+        { x: 0, y: 3 }
+      ],
+      lShape1: [
+        { x: 0, y: 0 },
+        { x: 0, y: 1 },
+        { x: 0, y: 2 },
+        { x: 1, y: 2 }
+      ],
+      lShape2: [
+        { x: 1, y: 0 },
+        { x: 1, y: 1 },
+        { x: 1, y: 2 },
+        { x: 0, y: 2 }
       ]
     };
 
@@ -122,7 +152,15 @@ export default class GameScene extends Phaser.Scene {
   createOtherBlocks() {   // 他のブロックをマップ上に生成する
     for (let id = 0; id < this.blockCollectionCount; id++) {
       let base;
-      const shapes = [this.shapes.square, this.shapes.tShape];
+      const shapes = [
+        this.shapes.square,
+        this.shapes.tShape,
+        this.shapes.zShape1,
+        this.shapes.zShape2,
+        this.shapes.iShape,
+        this.shapes.lShape1,
+        this.shapes.lShape2,
+      ];
       const shape = Phaser.Utils.Array.GetRandom(shapes);
 
       do {
