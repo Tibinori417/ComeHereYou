@@ -1,13 +1,12 @@
 export default class Block extends Phaser.GameObjects.Sprite {
-  constructor(scene, gridX, gridY, cellSize, collectionID) {
+  constructor(scene, gridX, gridY, cellSize, id) {
     super(scene, gridX * cellSize, gridY * cellSize, 'block');
     scene.add.existing(this);
 
     this.gridX = gridX;
     this.gridY = gridY;
-    this.cellSize = cellSize;
-    this.collectionID = collectionID;
+    this.id = id;
 
-    this.setDisplaySize(this.cellSize, this.cellSize);
+    this.setDisplaySize(cellSize, cellSize);
   }
 }

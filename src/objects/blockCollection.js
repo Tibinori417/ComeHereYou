@@ -1,6 +1,10 @@
-export default class Block {
-    constructor(id) {
-        this.id = id;
+export default class BlockCollection {
+    constructor() {
+        this.blocks = [];
+    }
+
+    destroy() {
+        this.blocks.forEach( block => block.destroy());
         this.blocks = [];
     }
 }

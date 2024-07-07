@@ -1,4 +1,5 @@
 import Block from '../objects/Block.js';
+import BlockCollection from '../objects/blockCollection.js';
 
 export default class GameScene extends Phaser.Scene {
   constructor() {
@@ -13,10 +14,11 @@ export default class GameScene extends Phaser.Scene {
 
   create() {
     this.score = 0;
-    this.blockCollectionCount = 100;
+    this.blockCollectionCount = 3;
+    this.marginGrid = 2;
 
     // グリッドのサイズを設定
-    this.gridWidth = 300; // 大きめのグリッドサイズに変更
+    this.gridWidth = 30; // 大きめのグリッドサイズに変更
     this.gridHeight = 20; // 大きめのグリッドサイズに変更
     this.cellSize = 32;
 
@@ -61,12 +63,11 @@ export default class GameScene extends Phaser.Scene {
     this.cursors = this.input.keyboard.createCursorKeys();
 
     // 初期の一つのブロック
-    this.playerBlock = this.createBlock(Math.floor(this.gridWidth / 2), Math.floor(this.gridHeight / 2));
+    this.createBlock(Math.floor(this.gridWidth / 2), Math.floor(this.gridHeight / 2));
 
     // カメラの設定
     this.cameras.main.setZoom(1); // 必要に応じてズームを調整
     this.cameras.main.setBounds(0, 0, backgroundWidth, backgroundHeight); // カメラの境界を設定
-
 
     // 他のブロックをマップ上に配置
     this.createOtherBlocks();
@@ -120,22 +121,41 @@ export default class GameScene extends Phaser.Scene {
 
   createOtherBlocks() {   // 他のブロックをマップ上に生成する
     for (let i = 0; i < this.blockCollectionCount; i++) {
-      const gridX = Phaser.Math.Between(0, this.gridWidth - 1);
-      const gridY = Phaser.Math.Between(0, this.gridHeight - 1);
-      if (!this.grid[gridX][gridY]) {
-        const block = new Block(this, gridX, gridY, this.cellSize); // グリッド座標でブロックを作成
-        this.otherBlocks.push(block);
-        this.grid[gridX][gridY] = block;
+      let base;
+
+      do {
+        base = {
+          x:Phaser.Math.Between(this.marginGrid, this.gridWidth - this.marginGrid - 5),
+          y:Phaser.Math.Between(this.marginGrid, this.gridHeight - this.marginGrid - 5)
+          };
+      } while (this.canCreateBlockCollection(base));
+
+      const block = new Block(this, base.x, base.y, this.cellSize, 0);
+      this.otherBlocks.push(block);
+      this.grid[base.x][base.y] = block;
+    }
+  }
+
+  canCreateBlockCollection(base) {    // 他のブロックコレクションが生成される範囲に既に他のブロックが存在するか確認し、存在する場合Falseを返す
+    const checkGridCount = 4;
+    for (let x = 0; x < checkGridCount; x++) {
+      for (let y = 0; y < checkGridCount; y++) {
+        if (this.grid[base.x + x][base.y + y]) {
+          console.log("a");
+          return true;
+        }
       }
     }
+    return false;
   }
 
   joinBlock(hitGrids) {   // 移動先にある他のブロックを削除し、自分のブロックに合体させる
     hitGrids.forEach( hitGrid => {
       const joinBlock = this.grid[hitGrid.x][hitGrid.y];
 
-      joinBlock.destroy();
       this.grid[hitGrid.x][hitGrid.y] = null;
+      joinBlock.destroy();
+      
       
       this.createBlock(hitGrid.x, hitGrid.y);
     });
@@ -159,7 +179,6 @@ export default class GameScene extends Phaser.Scene {
     const totalY = this.blocks.reduce((sum, block) => sum + block.y, 0);
     const centerX = totalX / this.blocks.length;
     const centerY = totalY / this.blocks.length;
-    console.log(centerX,centerY);
     this.cameras.main.centerOn(centerX, centerY);
   }
 }
