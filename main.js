@@ -17,7 +17,7 @@ const config = {
     disableWebAudio: false
   },
   fps: {
-    target: 6, // フレームレートを30fpsに設定
+    target: 20, // フレームレートを30fpsに設定
     forceSetTimeOut: true
   }
 };

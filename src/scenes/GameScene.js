@@ -13,9 +13,10 @@ export default class GameScene extends Phaser.Scene {
 
   create() {
     this.score = 0;
+    this.blockCollectionCount = 100;
 
     // グリッドのサイズを設定
-    this.gridWidth = 30; // 大きめのグリッドサイズに変更
+    this.gridWidth = 300; // 大きめのグリッドサイズに変更
     this.gridHeight = 20; // 大きめのグリッドサイズに変更
     this.cellSize = 32;
 
@@ -27,6 +28,21 @@ export default class GameScene extends Phaser.Scene {
         this.grid[x][y] = null;
       }
     }
+
+    const shapes = {
+      square: [
+        { x: 0, y: 0 },
+        { x: 1, y: 0 },
+        { x: 0, y: 1 },
+        { x: 1, y: 1 }
+      ],
+      tShape: [
+        { x: 0, y: 0 },
+        { x: -1, y: 0 },
+        { x: 1, y: 0 },
+        { x: 0, y: 1 }
+      ]
+    };
 
     // 背景タイルの作成
     const backgroundWidth = this.gridWidth * this.cellSize;
@@ -48,9 +64,9 @@ export default class GameScene extends Phaser.Scene {
     this.playerBlock = this.createBlock(Math.floor(this.gridWidth / 2), Math.floor(this.gridHeight / 2));
 
     // カメラの設定
-    this.cameras.main.startFollow(this.playerBlock, true, 0.05, 0.05); // 最初のブロックを追尾
     this.cameras.main.setZoom(1); // 必要に応じてズームを調整
     this.cameras.main.setBounds(0, 0, backgroundWidth, backgroundHeight); // カメラの境界を設定
+
 
     // 他のブロックをマップ上に配置
     this.createOtherBlocks();
@@ -82,31 +98,32 @@ export default class GameScene extends Phaser.Scene {
         }
       });
 
+      // hitGrid要素がない場合は移動先に移動、ある場合はhitGridにあるブロックを合体させる
       if (hitGrids.length == 0) {
         this.moveMyBlock(moveDirection);
       } else {
         this.joinBlock(hitGrids);
+        this.updateCamera();
       }
-      
     }
-    console.log(hitGrids);
 
     // カメラの位置に基づいて背景を更新
     this.updateBackground();
+    this.updateCamera();
   }
 
-  createBlock(gridX, gridY) {
-    const block = new Block(this, gridX, gridY, this.cursors, this.cellSize); // グリッド座標でブロックを作成
+  createBlock(gridX, gridY) {   // 自分のブロックを生成する
+    const block = new Block(this, gridX, gridY, this.cellSize);
     this.blocks.push(block);
     return block;
   }
 
-  createOtherBlocks() {
-    for (let i = 0; i < 10; i++) {
+  createOtherBlocks() {   // 他のブロックをマップ上に生成する
+    for (let i = 0; i < this.blockCollectionCount; i++) {
       const gridX = Phaser.Math.Between(0, this.gridWidth - 1);
       const gridY = Phaser.Math.Between(0, this.gridHeight - 1);
       if (!this.grid[gridX][gridY]) {
-        const block = new Block(this, gridX, gridY, this.cursors, this.cellSize); // グリッド座標でブロックを作成
+        const block = new Block(this, gridX, gridY, this.cellSize); // グリッド座標でブロックを作成
         this.otherBlocks.push(block);
         this.grid[gridX][gridY] = block;
       }
@@ -124,7 +141,7 @@ export default class GameScene extends Phaser.Scene {
     });
   }
 
-  moveMyBlock(moveDirection){
+  moveMyBlock(moveDirection){   // 自分のブロックを移動させる
     this.blocks.forEach( block => {
       block.gridX = block.gridX + moveDirection.x;
       block.gridY = block.gridY + moveDirection.y;
@@ -135,5 +152,14 @@ export default class GameScene extends Phaser.Scene {
   updateBackground() {
     const camera = this.cameras.main;
     this.background.setTilePosition(camera.scrollX, camera.scrollY);
+  }
+
+  updateCamera() {
+    const totalX = this.blocks.reduce((sum, block) => sum + block.x, 0);
+    const totalY = this.blocks.reduce((sum, block) => sum + block.y, 0);
+    const centerX = totalX / this.blocks.length;
+    const centerY = totalY / this.blocks.length;
+    console.log(centerX,centerY);
+    this.cameras.main.centerOn(centerX, centerY);
   }
 }
