@@ -7,14 +7,15 @@ export default class GameScene extends Phaser.Scene {
   }
 
   preload() {
-    // アセットの読み込み
-    this.load.image('block', 'assets/block.png'); // キャラクター用の画像
-    this.load.image('backgroundTile', 'assets/background.png'); // 背景画像をタイルとしてロード
+    this.load.image('block', 'assets/block.png');
+    this.load.image('backgroundTile', 'assets/background.png');
+    this.load.audio('rotateSE', 'assets/rotateSound.mp3');
+    this.load.audio('joinSE', 'assets/joinSound.mp3');
   }
 
   create() {
     this.score = 0;
-    this.blockCollectionCount = 100;
+    this.blockCollectionCount = 1000;
     this.marginGrid = 4;
     this.checkOffset = -2;
 
@@ -99,6 +100,10 @@ export default class GameScene extends Phaser.Scene {
     // カメラの設定
     this.cameras.main.setZoom(1); // 必要に応じてズームを調整
     this.cameras.main.setBounds(0, 0, backgroundWidth, backgroundHeight); // カメラの境界を設定
+
+    // 音声の設定
+    this.rotateSE = this.sound.add('rotateSE');
+    this.joinSE = this.sound.add('joinSE');
 
     // 他のブロックをマップ上に配置
     this.createOtherBlocks();
@@ -209,6 +214,8 @@ export default class GameScene extends Phaser.Scene {
         });
       }
     });
+
+    this.joinSE.play();
   }
 
   moveMyBlock(moveDirection){   // 自分のブロックを移動させる
@@ -252,6 +259,8 @@ export default class GameScene extends Phaser.Scene {
       block.gridY = centerGrid.y + rotatedGrid[index].y;
       block.setPosition(block.gridX * this.cellSize, block.gridY * this.cellSize);
     });
+    
+    this.rotateSE.play();
   }
 
   updateBackground() {
