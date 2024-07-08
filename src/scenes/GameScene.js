@@ -85,7 +85,7 @@ export default class GameScene extends Phaser.Scene {
     this.background.setScrollFactor(0); // 背景がカメラの動きに応じてスクロールするように設定
 
     // スコア表示
-    this.scoreText = this.add.text(20, 20, 'Score: 0', { fontSize: '32px', fill: '#FFFFFF' }).setScrollFactor(0);
+    this.scoreText = this.add.text(20, 20, `Score: ${this.score}`, { fontSize: '32px', fill: '#FFFFFF' }).setScrollFactor(0);
 
     // ブロックのグループを初期化
     this.blocks = [];
@@ -124,7 +124,7 @@ export default class GameScene extends Phaser.Scene {
     }
 
     const hitGrids = [];
-
+    console.log(this.score);
     if (moveDirection) {
       // 全ての自分のブロックの行き先グリッドを確認し、他のブロックがあればhitGrid配列に追加
       this.blocks.forEach(block => {
@@ -143,6 +143,8 @@ export default class GameScene extends Phaser.Scene {
         this.moveMyBlock(moveDirection);
       } else {
         this.joinBlock(hitGrids);
+        this.checkAndMarkBlocks(this.blocks, this.gridWidth, this.gridHeight);
+        this.blocks = this.removeMarkedBlocks(this.blocks);
         this.updateCamera();
       }
     }
@@ -228,6 +230,7 @@ export default class GameScene extends Phaser.Scene {
 
   rotateMyBlock(){
     const center = this.outputCenter();
+
     const checkGrid = {
       x: center.x / this.cellSize,
       y: center.y / this.cellSize
@@ -248,7 +251,7 @@ export default class GameScene extends Phaser.Scene {
       x: block.gridX - centerGrid.x,
       y: block.gridY - centerGrid.y
     }));
-    console.log(centerGrid);
+    
     const rotatedGrid = offsetGrid.map(block => ({
       x: -block.y + adjustmentGrid.x,
       y: block.x + adjustmentGrid.y
@@ -263,6 +266,58 @@ export default class GameScene extends Phaser.Scene {
     this.rotateSE.play();
   }
 
+  checkAndMarkBlocks(blocks, gridWidth, gridHeight) {
+    function checkRange(baseX, baseY, rangeSize) {
+      for (let x = baseX; x < baseX + rangeSize; x++) {
+        for (let y = baseY; y < baseY + rangeSize; y++) {
+          if (x >= gridWidth || y >= gridHeight) {
+            return false;
+          }
+          const block = blocks.find(b => b.gridX === x && b.gridY === y);
+          if (!block) {
+            return false;
+          }
+        }
+      }
+      return true;
+    }
+    
+    blocks.forEach(block => {
+      // 3x3の確認
+      let removeRange = 3;
+      if (checkRange(block.gridX, block.gridY, removeRange)) {
+        for (let x = block.gridX; x < block.gridX + removeRange; x++) {
+          for (let y = block.gridY; y < block.gridY + removeRange; y++) {
+            const b = blocks.find(b => b.gridX === x && b.gridY === y);
+            if (b) b.toBeRemoved = true;
+          }
+        }
+        this.updateScore(1);
+      }
+  
+      // 4x4の確認
+      // if (checkRange(block.gridX, block.gridY, 4)) {
+      //   for (let x = block.gridX; x < block.gridX + 4; x++) {
+      //     for (let y = block.gridY; y < block.gridY + 4; y++) {
+      //       const b = blocks.find(b => b.gridX === x && b.gridY === y);
+      //       if (b) b.toBeRemoved = true;
+      //     }
+      //   }
+      // }
+    });
+  }
+  
+  removeMarkedBlocks(blocks) {
+    const remainingBlocks = blocks.filter(block => {
+      if (block.toBeRemoved) {
+        block.destroy();
+        return false;
+      }
+      return true;
+    });
+    return remainingBlocks;
+  }
+
   updateBackground() {
     const camera = this.cameras.main;
     this.background.setTilePosition(camera.scrollX, camera.scrollY);
@@ -271,6 +326,11 @@ export default class GameScene extends Phaser.Scene {
   updateCamera() {
     const center = this.outputCenter();
     this.cameras.main.centerOn(center.x, center.y);
+  }
+
+  updateScore(points) {
+    this.score += points;
+    this.scoreText.setText(`Score: ${this.score}`);
   }
 
   outputCenter() {

@@ -6,7 +6,12 @@ export default class Block extends Phaser.GameObjects.Sprite {
     this.gridX = gridX;
     this.gridY = gridY;
     this.id = id;
+    this.toBeRemoved = false;
 
     this.setDisplaySize(cellSize, cellSize);
   }
+
+  // destroy() {
+  //   this.Sprite.destroy();
+  // }
 }

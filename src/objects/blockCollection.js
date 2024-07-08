@@ -45,8 +45,8 @@ export default class BlockCollection {
 
     destroy(scene) {
         this.blocks.forEach( block => {
-            block.destroy();
             scene.grid[block.gridX][block.gridY] = null;
+            block.destroy();
         });
         this.blocks = [];
     }
