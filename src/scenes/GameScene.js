@@ -228,6 +228,10 @@ export default class GameScene extends Phaser.Scene {
           const block = blocks.find(b => b.gridX === x && b.gridY === y);
           if (!block) {
             return false;
+          } else {
+            if (block.type === 'wall') {
+              return false;
+            }
           }
         }
       }
@@ -246,16 +250,6 @@ export default class GameScene extends Phaser.Scene {
         }
         this.updateScore(1);
       }
-  
-      // 4x4の確認
-      // if (checkRange(block.gridX, block.gridY, 4)) {
-      //   for (let x = block.gridX; x < block.gridX + 4; x++) {
-      //     for (let y = block.gridY; y < block.gridY + 4; y++) {
-      //       const b = blocks.find(b => b.gridX === x && b.gridY === y);
-      //       if (b) b.toBeRemoved = true;
-      //     }
-      //   }
-      // }
     });
   }
   
