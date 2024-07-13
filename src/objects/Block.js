@@ -8,6 +8,8 @@ export default class Block extends Phaser.GameObjects.Sprite {
     this.id = id;
     this.toBeRemoved = false;
 
+    this.setTint(0x0000ff);
+
     this.setDisplaySize(cellSize, cellSize);
   }
 

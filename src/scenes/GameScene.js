@@ -93,6 +93,7 @@ export default class GameScene extends Phaser.Scene {
 
     // 入力のハンドリング
     this.cursors = this.input.keyboard.createCursorKeys();
+    this.spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
 
     // 初期の一つのブロック
     this.createBlock(Math.floor(this.gridWidth / 2), Math.floor(this.gridHeight / 2));
@@ -110,7 +111,8 @@ export default class GameScene extends Phaser.Scene {
   }
 
   update(time) {
-    const { left, right, up, down, space } = this.cursors;
+    const { left, right, up, down } = this.cursors;
+    const spaceJustDown = Phaser.Input.Keyboard.JustDown(this.spaceKey);
 
     let moveDirection = null;
     if (left.isDown) {
@@ -124,7 +126,7 @@ export default class GameScene extends Phaser.Scene {
     }
 
     const hitGrids = [];
-    console.log(this.score);
+  
     if (moveDirection) {
       // 全ての自分のブロックの行き先グリッドを確認し、他のブロックがあればhitGrid配列に追加
       this.blocks.forEach(block => {
@@ -149,7 +151,7 @@ export default class GameScene extends Phaser.Scene {
       }
     }
 
-    if (space.isDown) this.rotateMyBlock();
+    if (spaceJustDown) this.rotateMyBlock();
 
     // カメラの位置に基づいて背景を更新
     this.updateBackground();
