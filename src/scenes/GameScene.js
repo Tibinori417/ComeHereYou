@@ -34,50 +34,7 @@ export default class GameScene extends Phaser.Scene {
       }
     }
 
-    this.shapes = {
-      square: [
-        { x: 0, y: 0 },
-        { x: 1, y: 0 },
-        { x: 0, y: 1 },
-        { x: 1, y: 1 }
-      ],
-      tShape: [
-        { x: 0, y: 0 },
-        { x: 1, y: 0 },
-        { x: 2, y: 0 },
-        { x: 1, y: 1 }
-      ],
-      zShape1: [
-        { x: 0, y: 0 },
-        { x: 0, y: 1 },
-        { x: 1, y: 1 },
-        { x: 1, y: 2 }
-      ],
-      zShape2: [
-        { x: 1, y: 0 },
-        { x: 1, y: 1 },
-        { x: 0, y: 1 },
-        { x: 0, y: 2 }
-      ],
-      iShape: [
-        { x: 0, y: 0 },
-        { x: 0, y: 1 },
-        { x: 0, y: 2 },
-        { x: 0, y: 3 }
-      ],
-      lShape1: [
-        { x: 0, y: 0 },
-        { x: 0, y: 1 },
-        { x: 0, y: 2 },
-        { x: 1, y: 2 }
-      ],
-      lShape2: [
-        { x: 1, y: 0 },
-        { x: 1, y: 1 },
-        { x: 1, y: 2 },
-        { x: 0, y: 2 }
-      ]
-    };
+    this.shapeTypes = [ 'I', 'O', 'S', 'Z', 'J', 'L', 'T'];
 
     // 背景タイルの作成
     const backgroundWidth = this.gridWidth * this.cellSize;
@@ -97,7 +54,7 @@ export default class GameScene extends Phaser.Scene {
     this.spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
 
     // 初期の一つのブロック
-    this.createBlock(Math.floor(this.gridWidth / 2), Math.floor(this.gridHeight / 2));
+    this.createBlock(Math.floor(this.gridWidth / 2), Math.floor(this.gridHeight / 2), 'wall');
 
     // カメラの設定
     this.cameras.main.setZoom(1); // 必要に応じてズームを調整
@@ -159,8 +116,8 @@ export default class GameScene extends Phaser.Scene {
     this.updateCamera();
   }
 
-  createBlock(gridX, gridY) {   // 自分のブロックを生成する
-    const block = new Block(this, gridX, gridY, this.cellSize);
+  createBlock(gridX, gridY, type) {   // 自分のブロックを生成する
+    const block = new Block(this, gridX, gridY, this.cellSize, null, type);
     this.blocks.push(block);
     return block;
   }
@@ -168,16 +125,8 @@ export default class GameScene extends Phaser.Scene {
   createOtherBlocks() {   // 他のブロックをマップ上に生成する
     for (let id = 0; id < this.blockCollectionCount; id++) {
       let base;
-      const shapes = [
-        this.shapes.square,
-        this.shapes.tShape,
-        this.shapes.zShape1,
-        this.shapes.zShape2,
-        this.shapes.iShape,
-        this.shapes.lShape1,
-        this.shapes.lShape2,
-      ];
-      const shape = Phaser.Utils.Array.GetRandom(shapes);
+      const shapetypes = this.shapeTypes;
+      const shapetype = Phaser.Utils.Array.GetRandom(shapetypes);
 
       do {
         base = {
@@ -186,7 +135,7 @@ export default class GameScene extends Phaser.Scene {
           };
       } while (this.canCreateBlockCollection(base));
 
-      const blockCollection = new BlockCollection(this, base, this.cellSize, id, shape);
+      const blockCollection = new BlockCollection(this, base, this.cellSize, id, shapetype);
       this.otherBlockCollections.push(blockCollection);
     }
   }
@@ -215,7 +164,7 @@ export default class GameScene extends Phaser.Scene {
         collection.destroy(this);
   
         collectionBlocks.forEach( block => {
-          this.createBlock(block.gridX, block.gridY);
+          this.createBlock(block.gridX, block.gridY, block.type);
         });
       }
     });
