@@ -9,6 +9,7 @@ export default class GameScene extends Phaser.Scene {
   preload() {
     this.load.image('block', 'assets/block.png');
     this.load.image('backgroundTile', 'assets/background.png');
+    this.load.image('setting', 'assets/setting.png');
     this.load.audio('rotateSE', 'assets/rotateSound.mp3');
     this.load.audio('joinSE', 'assets/joinSound.mp3');
   }
@@ -41,6 +42,9 @@ export default class GameScene extends Phaser.Scene {
     const backgroundHeight = this.gridHeight * this.cellSize;
     this.background = this.add.tileSprite(0, 0, this.scale.width, this.scale.height, 'backgroundTile').setOrigin(0, 0);
     this.background.setScrollFactor(0); // 背景がカメラの動きに応じてスクロールするように設定
+    this.setting = this.add.image(100,100,'setting').setInteractive();
+    this.setting.setOrigin(0,0);
+    this.setting.setScrollFactor(0);
 
     // スコア表示
     this.scoreText = this.add.text(20, 20, `Score: ${this.score}`, { fontSize: '32px', fill: '#FFFFFF' }).setScrollFactor(0);
