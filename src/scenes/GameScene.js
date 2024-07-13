@@ -18,6 +18,7 @@ export default class GameScene extends Phaser.Scene {
     this.blockCollectionCount = 1000;
     this.marginGrid = 4;
     this.checkOffset = -2;
+    this.otherBlockSpacing = 5;
 
     // グリッドのサイズを設定
     this.gridWidth = 500;
@@ -191,7 +192,7 @@ export default class GameScene extends Phaser.Scene {
   }
 
   canCreateBlockCollection(base) {    // 他のブロックコレクションが生成される範囲に既に他のブロックが存在するか確認し、存在する場合Falseを返す
-    const checkGridCount = 5;
+    const checkGridCount = this.otherBlockSpacing;
     for (let x = this.checkOffset; x < checkGridCount - this.checkOffset; x++) {
       for (let y = this.checkOffset; y < checkGridCount - this.checkOffset; y++) {
         if (this.grid[base.x + x][base.y + y]) {

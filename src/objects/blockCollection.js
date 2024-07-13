@@ -1,12 +1,13 @@
 import Block from "./Block.js";
 
 export default class BlockCollection {
-    constructor(scene, base, cellSize, id, shape) {
+    constructor(scene, base, cellSize, id, shape, type) {
         this.blocks = [];
         this.id = id;
         this.shape = shape;
         this.base = base;
         this.cellSize = cellSize;
+        this.type = type;
         this.rotateTimes = Math.floor(Math.random() * 4);
         
         const rotatedShape = this.rotateShape(this.shape, this.rotateTimes);
@@ -18,7 +19,7 @@ export default class BlockCollection {
         this.shape.forEach( offset => {
             const gridX = this.base.x + offset.x;
             const gridY = this.base.y + offset.y;
-            const block = new Block(scene, gridX, gridY, this.cellSize, this.id);
+            const block = new Block(scene, gridX, gridY, this.cellSize, this.id, this.type);
             this.blocks.push(block);
             scene.grid[block.gridX][block.gridY] = block;
         });
