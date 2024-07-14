@@ -20,6 +20,7 @@ export default class GameScene extends Phaser.Scene {
     this.marginGrid = 4;
     this.checkOffset = -2;
     this.otherBlockSpacing = 5;
+    this.lastMoveTime = 0.0;
 
     // グリッドのサイズを設定
     this.gridWidth = 500;
@@ -42,9 +43,36 @@ export default class GameScene extends Phaser.Scene {
     const backgroundHeight = this.gridHeight * this.cellSize;
     this.background = this.add.tileSprite(0, 0, this.scale.width, this.scale.height, 'backgroundTile').setOrigin(0, 0);
     this.background.setScrollFactor(0); // 背景がカメラの動きに応じてスクロールするように設定
-    this.setting = this.add.image(100,100,'setting').setInteractive();
-    this.setting.setOrigin(0,0);
+    this.setting = this.add.image(790,10,'setting').setInteractive();
+    this.setting.setOrigin(1,0);
+
+    // 設定ウィンドウ
     this.setting.setScrollFactor(0);
+    this.setting.on('pointerdown', this.toggleSettingsMenu, this);
+    this.settingsMenu = this.add.container(400, 300).setVisible(false);
+    this.settingsMenu.setScrollFactor(0);
+    const background = this.add.rectangle(0, 0, 300, 150, 0x000000, 0.7);
+    this.settingsMenu.add(background);
+    this.moveSpeedText = this.add.text(-130, -40, 'Move Speed:', { fontSize: '16px', fill: '#fff' });
+    this.moveSpeedSlider = this.add.dom(145, -31).createFromHTML('<input type="range" min="1" max="5" value="3" id="moveSpeedSlider">');
+    this.settingsMenu.add([this.moveSpeedText, this.moveSpeedSlider]);
+    this.volumeText = this.add.text(-130, 20, 'Volume:', { fontSize: '16px', fill: '#fff' });
+    this.volumeSlider = this.add.dom(145, 29).createFromHTML('<input type="range" min="0" max="10" value="5" id="volumeSlider">');
+    this.settingsMenu.add([this.volumeText, this.volumeSlider]);
+    this.moveSpeed = 3; // 初期移動速度
+    this.volume = 5; // 初期ボリューム
+    this.sound.volume = 0.05;
+    this.moveSpeedSlider.addListener('input');
+    this.moveSpeedSlider.on('input', function(event) {
+      this.moveSpeed = event.target.value;
+    },this);
+    this.volumeSlider.addListener('input');
+    this.volumeSlider.on('input', function(event) {
+      this.volume = event.target.value;
+      this.sound.volume = this.volume / 100;
+    },this);
+    this.children.bringToTop(this.settingsMenu);
+    this.children.bringToTop(this.setting);
 
     // スコア表示
     this.scoreText = this.add.text(20, 20, `Score: ${this.score}`, { fontSize: '32px', fill: '#FFFFFF' }).setScrollFactor(0);
@@ -77,19 +105,27 @@ export default class GameScene extends Phaser.Scene {
     const spaceJustDown = Phaser.Input.Keyboard.JustDown(this.spaceKey);
 
     let moveDirection = null;
-    if (left.isDown) {
-      moveDirection = { x: -1, y: 0 };
-    } else if (right.isDown) {
-      moveDirection = { x: 1, y: 0 };
-    } else if (up.isDown) {
-      moveDirection = { x: 0, y: -1 };
-    } else if (down.isDown) {
-      moveDirection = { x: 0, y: 1 };
+    const moveSpeed = 60 - this.moveSpeed * 10;
+    if (this.lastMoveTime + moveSpeed < time) {
+      if (left.isDown) {
+        moveDirection = { x: -1, y: 0 };
+      } else if (right.isDown) {
+        moveDirection = { x: 1, y: 0 };
+      } else if (up.isDown) {
+        moveDirection = { x: 0, y: -1 };
+      } else if (down.isDown) {
+        moveDirection = { x: 0, y: 1 };
+      } else {
+        this.lastMoveTime = 0.0;
+      }
     }
+    
 
     const hitGrids = [];
   
     if (moveDirection) {
+      this.lastMoveTime = time;
+
       // 全ての自分のブロックの行き先グリッドを確認し、他のブロックがあればhitGrid配列に追加
       this.blocks.forEach(block => {
         const checkGrid = {
@@ -114,6 +150,8 @@ export default class GameScene extends Phaser.Scene {
     }
 
     if (spaceJustDown) this.rotateMyBlock();
+
+    this.children.bringToTop(this.setting);
 
     // カメラの位置に基づいて背景を更新
     this.updateBackground();
@@ -295,5 +333,12 @@ export default class GameScene extends Phaser.Scene {
       x: centerX,
       y: centerY
     };
+  }
+  
+  toggleSettingsMenu() {
+    this.settingsMenu.setVisible(!this.settingsMenu.visible);
+    if (this.settingsMenu.visible) {
+      this.children.bringToTop(this.settingsMenu); // 表示するときに最前面に持ってくる
+    }
   }
 }

@@ -19,6 +19,9 @@ const config = {
   fps: {
     target: 60, // フレームレートを30fpsに設定
     forceSetTimeOut: true
+  },
+  dom: {
+    createContainer: true
   }
 };
 
