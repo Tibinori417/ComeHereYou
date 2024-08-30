@@ -145,7 +145,6 @@ export default class GameScene extends Phaser.Scene {
         this.joinBlock(hitGrids);
         this.checkAndMarkBlocks(this.blocks, this.gridWidth, this.gridHeight);
         this.blocks = this.removeMarkedBlocks(this.blocks);
-        this.updateCamera();
       }
     }
 
