@@ -154,7 +154,10 @@ export default class GameScene extends Phaser.Scene {
 
     if (spaceJustDown) this.rotateMyBlock();
 
+    // 設定ボタンやスコアテキストを最前面に設定
     this.children.bringToTop(this.setting);
+    this.children.bringToTop(this.settingsMenu);
+    this.children.bringToTop(this.scoreText);
 
     // カメラの位置に基づいて背景を更新
     this.updateBackground();
