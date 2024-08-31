@@ -48,11 +48,17 @@ export default class GameScene extends Phaser.Scene {
     this.setting = this.add.image(790, 10, 'setting').setInteractive();
     this.setting.setDisplaySize(50, 50);
     this.setting.setTint(0xbbbbbb);
-    this.setting.setOrigin(1,0);
-
-    // 設定ウィンドウ
+    this.setting.setOrigin(1, 0);
     this.setting.setScrollFactor(0);
     this.setting.on('pointerdown', this.toggleSettingsMenu, this);
+    this.setting.on('pointerover', () => {
+      this.input.manager.canvas.style.cursor = 'pointer';
+    });
+    this.setting.on('pointerout', () => {
+      this.input.manager.canvas.style.cursor = 'default';
+    });
+
+    // 設定ウィンドウ
     this.settingsMenu = this.add.container(400, 300).setVisible(false);
     this.settingsMenu.setScrollFactor(0);
     const background = this.add.rectangle(0, 0, 300, 150, 0x000000, 0.7);
@@ -75,8 +81,6 @@ export default class GameScene extends Phaser.Scene {
       this.volume = event.target.value;
       this.sound.volume = this.volume / 100;
     },this);
-    this.children.bringToTop(this.settingsMenu);
-    this.children.bringToTop(this.setting);
 
     // スコア表示
     this.scoreText = this.add.text(20, 20, `Score: ${this.score}`, { fontSize: '32px', fill: '#FFFFFF' }).setScrollFactor(0);
