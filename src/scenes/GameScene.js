@@ -345,10 +345,9 @@ export default class GameScene extends Phaser.Scene {
     };
   }
   
-  toggleSettingsMenu() {
-    this.settingsMenu.setVisible(!this.settingsMenu.visible);
-    if (this.settingsMenu.visible) {
-      this.children.bringToTop(this.settingsMenu); // 表示するときに最前面に持ってくる
-    }
+  toggleSettingsMenu() {    // 設定ボタンを押した時のイベント
+    this.input.manager.canvas.style.cursor = 'default';
+    this.scene.launch('SettingScene');
+    this.scene.pause();
   }
 }
