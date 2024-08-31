@@ -9,7 +9,7 @@ export default class GameScene extends Phaser.Scene {
   preload() {
     this.load.image('block', 'assets/block.png');
     this.load.image('backgroundTile', 'assets/background.png');
-    this.load.image('setting', 'assets/setting.png');
+    this.load.image('setting', 'assets/setting1.png');
     this.load.audio('rotateSE', 'assets/rotateSound.mp3');
     this.load.audio('joinSE', 'assets/joinSound.mp3');
   }
@@ -43,7 +43,11 @@ export default class GameScene extends Phaser.Scene {
     const backgroundHeight = this.gridHeight * this.cellSize;
     this.background = this.add.tileSprite(0, 0, this.scale.width, this.scale.height, 'backgroundTile').setOrigin(0, 0);
     this.background.setScrollFactor(0); // 背景がカメラの動きに応じてスクロールするように設定
-    this.setting = this.add.image(790,10,'setting').setInteractive();
+
+    // 設定ボタン(歯車)画像を設定
+    this.setting = this.add.image(790, 10, 'setting').setInteractive();
+    this.setting.setDisplaySize(50, 50);
+    this.setting.setTint(0xbbbbbb);
     this.setting.setOrigin(1,0);
 
     // 設定ウィンドウ
