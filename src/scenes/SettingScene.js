@@ -9,8 +9,12 @@ export default class SettingScene extends Phaser.Scene {
   }
 
   create() {
+    // 現在の設定値を取得
+    let movespeed = this.registry.get('movespeed');
+    let soundvolume = this.registry.get('soundvolume');
+
     // 設定メニュー背景
-    const menuBG = { x: 500, y: 300};
+    const menuBG = { x: 550, y: 300};
     const overlay = this.add.graphics();
     overlay.fillStyle(0x000000, 0.7); // 半透明の黒
     overlay.fillRect(this.scale.width / 2 - menuBG.x / 2, this.scale.height / 2 - menuBG.y / 2, menuBG.x, menuBG.y);
@@ -18,13 +22,11 @@ export default class SettingScene extends Phaser.Scene {
     this.add.text(this.scale.width / 2, 180, 'Setting', { fontSize: '32px', fill: '#ffffff' }).setOrigin(0.5);
 
     // 設定項目
-    this.createSlider(480, 260, 'Move Speed', (value) => {
-      console.log('Move Speed:', value);
-      // Update game speed logic here
+    this.createSlider(510, 260, 'Movement Speed', movespeed, (value) => {
+      this.registry.set('movespeed', value);
     });
-    this.createSlider(480, 340, 'Sound Volume', (value) => {
-      console.log('Sound Volume:', value);
-      // Update volume logic here
+    this.createSlider(510, 340, 'Sound Volume', soundvolume, (value) => {
+      this.registry.set('soundvolume', value);
     });
 
     // 閉じるボタン
@@ -45,12 +47,13 @@ export default class SettingScene extends Phaser.Scene {
       if (x < this.scale.width / 2 - menuBG.x / 2 || x > this.scale.width / 2 + menuBG.x / 2 || y < this.scale.height / 2 - menuBG.y / 2 || y > this.scale.height / 2 + menuBG.y / 2) {
         this.closeMenu();
       }
+    
     });
   }
 
-  createSlider(x, y, label, onValueChange) {
-    this.add.text(x - 300, y, label, { fontSize: '18px', fill: '#fff' }).setOrigin(0, 0.5);
-        
+  createSlider(x, y, label, settingvalue, onValueChange) {    // スライダー生成関数
+    this.add.text(x - 355, y, label, { fontSize: '20px', fill: '#fff' }).setOrigin(0, 0.5);
+    
     const track = this.add.image(x, y, 'slider').setOrigin(0.5)
     const handle = this.add.image(x, y, 'sliderHandle')
       .setOrigin(0.5)
@@ -58,6 +61,8 @@ export default class SettingScene extends Phaser.Scene {
 
     const minX = x - track.width / 2 + handle.width / 2;
     const maxX = x + track.width / 2 - handle.width / 2;
+
+    handle.x = minX + settingvalue * (maxX - minX);
 
     // スライダーハンドルにカーソルを合わせたら指、離れたら矢印、ドラッグ中は指のまま変更なし、ドラッグ終了時にオブジェクト上なら指のままでオブジェクト外なら矢印
     handle.on('drag', (pointer, dragX) => {

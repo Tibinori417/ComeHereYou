@@ -58,29 +58,11 @@ export default class GameScene extends Phaser.Scene {
       this.input.manager.canvas.style.cursor = 'default';
     });
 
-    // 設定ウィンドウ
-    this.settingsMenu = this.add.container(400, 300).setVisible(false);
-    this.settingsMenu.setScrollFactor(0);
-    const background = this.add.rectangle(0, 0, 300, 150, 0x000000, 0.7);
-    this.settingsMenu.add(background);
-    this.moveSpeedText = this.add.text(-130, -40, 'Move Speed:', { fontSize: '16px', fill: '#fff' });
-    this.moveSpeedSlider = this.add.dom(145, -31).createFromHTML('<input type="range" min="1" max="5" value="3" id="moveSpeedSlider">');
-    this.settingsMenu.add([this.moveSpeedText, this.moveSpeedSlider]);
-    this.volumeText = this.add.text(-130, 20, 'Volume:', { fontSize: '16px', fill: '#fff' });
-    this.volumeSlider = this.add.dom(145, 29).createFromHTML('<input type="range" min="0" max="10" value="5" id="volumeSlider">');
-    this.settingsMenu.add([this.volumeText, this.volumeSlider]);
-    this.moveSpeed = 3; // 初期移動速度
-    this.volume = 5; // 初期ボリューム
-    this.sound.volume = 0.05;
-    this.moveSpeedSlider.addListener('input');
-    this.moveSpeedSlider.on('input', function(event) {
-      this.moveSpeed = event.target.value;
-    },this);
-    this.volumeSlider.addListener('input');
-    this.volumeSlider.on('input', function(event) {
-      this.volume = event.target.value;
-      this.sound.volume = this.volume / 100;
-    },this);
+    // 設定値を初期化
+    this.registry.set('movespeed', 0.5); // 移動速度
+    this.moveSpeed = this.registry.get('movespeed');
+    this.registry.set('soundvolume', 0.5);
+    this.sound.volume = this.registry.get('soundvolume') / 10; // 効果音量
 
     // スコア表示
     this.scoreText = this.add.text(20, 20, `Score: ${this.score}`, { fontSize: '32px', fill: '#FFFFFF' }).setScrollFactor(0);
@@ -109,11 +91,15 @@ export default class GameScene extends Phaser.Scene {
   }
 
   update(time) {
+    // 最新の設定値に更新
+    this.moveSpeed = this.registry.get('movespeed');
+    this.sound.volume = this.registry.get('soundvolume') / 10;
+
     const { left, right, up, down } = this.cursors;
     const spaceJustDown = Phaser.Input.Keyboard.JustDown(this.spaceKey);
 
     let moveDirection = null;
-    const moveSpeed = 60 - this.moveSpeed * 10;
+    const moveSpeed = 60 - this.moveSpeed * 50;
     if (this.lastMoveTime + moveSpeed < time) {
       if (left.isDown) {
         moveDirection = { x: -1, y: 0 };
@@ -127,7 +113,6 @@ export default class GameScene extends Phaser.Scene {
         this.lastMoveTime = 0.0;
       }
     }
-    
 
     const hitGrids = [];
   
