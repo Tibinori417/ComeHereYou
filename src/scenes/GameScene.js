@@ -65,7 +65,7 @@ export default class GameScene extends Phaser.Scene {
     this.sound.volume = this.registry.get('soundvolume') / 10; // 効果音量
 
     // スコア表示
-    this.scoreText = this.add.text(20, 20, `Score: ${this.score}`, { fontSize: '32px', fill: '#FFFFFF' }).setScrollFactor(0);
+    this.scoreText = this.add.text(10, 10, `Score: ${this.score}`, { fontSize: '24px', fill: '#FFFFFF' }).setScrollFactor(0);
 
     // ブロックのグループを初期化
     this.blocks = [];
@@ -91,10 +91,6 @@ export default class GameScene extends Phaser.Scene {
   }
 
   update(time) {
-    // 最新の設定値に更新
-    this.moveSpeed = this.registry.get('movespeed');
-    this.sound.volume = this.registry.get('soundvolume') / 10;
-
     const { left, right, up, down } = this.cursors;
     const spaceJustDown = Phaser.Input.Keyboard.JustDown(this.spaceKey);
 
@@ -142,6 +138,10 @@ export default class GameScene extends Phaser.Scene {
     }
 
     if (spaceJustDown) this.rotateMyBlock();
+
+    // 設定値を更新
+    this.moveSpeed = this.registry.get('movespeed');
+    this.sound.volume = this.registry.get('soundvolume') / 10;
 
     // 設定ボタンやスコアテキストを最前面に設定
     this.children.bringToTop(this.setting);
@@ -255,7 +255,8 @@ export default class GameScene extends Phaser.Scene {
     this.rotateSE.play();
   }
 
-  checkAndMarkBlocks(blocks, gridWidth, gridHeight) {
+  checkAndMarkBlocks(blocks, gridWidth, gridHeight) {   // 3x3の範囲で自分のブロックが存在したらスコア加算
+    let completeCnt = 0;
     function checkRange(baseX, baseY, rangeSize) {
       for (let x = baseX; x < baseX + rangeSize; x++) {
         for (let y = baseY; y < baseY + rangeSize; y++) {
@@ -279,15 +280,21 @@ export default class GameScene extends Phaser.Scene {
       // 3x3の確認
       let removeRange = 3;
       if (checkRange(block.gridX, block.gridY, removeRange)) {
+        completeCnt++;
         for (let x = block.gridX; x < block.gridX + removeRange; x++) {
           for (let y = block.gridY; y < block.gridY + removeRange; y++) {
             const b = blocks.find(b => b.gridX === x && b.gridY === y);
             if (b) b.toBeRemoved = true;
           }
         }
-        this.updateScore(1);
       }
     });
+
+    if (completeCnt > 0) {
+      const addScorePoint = completeCnt * completeCnt + 2;
+      this.updateScore(addScorePoint);
+    }
+    
   }
   
   removeMarkedBlocks(blocks) {
