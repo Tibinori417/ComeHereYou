@@ -25,7 +25,7 @@ export default class GameScene extends Phaser.Scene {
     // グリッドのサイズを設定
     this.gridWidth = 500;
     this.gridHeight = 500;
-    this.cellSize = 32;
+    this.cellSize = 16;
 
     // グリッドの初期化
     this.grid = [];
@@ -79,7 +79,7 @@ export default class GameScene extends Phaser.Scene {
     this.createBlock(Math.floor(this.gridWidth / 2), Math.floor(this.gridHeight / 2), 'wall');
 
     // カメラの設定
-    this.cameras.main.setZoom(1); // 必要に応じてズームを調整
+    this.cameras.main.setZoom(1.0); // 必要に応じてズームを調整
     this.cameras.main.setBounds(0, 0, backgroundWidth, backgroundHeight); // カメラの境界を設定
 
     // 音声の設定
@@ -94,6 +94,7 @@ export default class GameScene extends Phaser.Scene {
     const { left, right, up, down } = this.cursors;
     const spaceJustDown = Phaser.Input.Keyboard.JustDown(this.spaceKey);
 
+    // 移動処理1
     let moveDirection = null;
     const moveSpeed = 60 - this.moveSpeed * 50;
     if (this.lastMoveTime + moveSpeed < time) {
