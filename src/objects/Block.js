@@ -46,4 +46,22 @@ export default class Block extends Phaser.GameObjects.Sprite {
         break;
     }
   }
+
+  addEffect(effectType) {
+    switch (effectType) {
+      case 'barrel':    // タルの様な歪み
+        this.preFX.addBarrel(4);
+        break;
+      case 'brightness':    // 明るさ
+        this.effect = this.preFX.addColorMatrix().brightness(1.5);
+        break;
+      default:
+        console.log("Type of effect is Nothing.");
+        break;
+    }
+  }
+
+  disableEffect() {
+    this.preFX.remove(this.effect);
+  }
 }

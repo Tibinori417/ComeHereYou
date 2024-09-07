@@ -25,7 +25,7 @@ export default class GameScene extends Phaser.Scene {
     // グリッドのサイズを設定
     this.gridWidth = 500;
     this.gridHeight = 500;
-    this.cellSize = 16;
+    this.cellSize = 25;
 
     // グリッドの初期化
     this.grid = [];
@@ -156,6 +156,7 @@ export default class GameScene extends Phaser.Scene {
 
   createBlock(gridX, gridY, type) {   // 自分のブロックを生成する
     const block = new Block(this, gridX, gridY, this.cellSize, null, type);
+    block.addEffect('brightness');
     this.blocks.push(block);
     return block;
   }
