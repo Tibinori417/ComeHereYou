@@ -24,6 +24,7 @@ export default class GameScene extends Phaser.Scene {
     this.otherBlockSpacing = 5;
     this.lastMoveTime = 0.0;
     this.lifeBlockSize = 15;
+    this.enableInput = true;
 
     // グリッドのサイズを設定
     this.gridWidth = 500;
@@ -127,40 +128,45 @@ export default class GameScene extends Phaser.Scene {
       }
     }
 
-    const hitGrids = [];
-  
-    if (moveDirection) {
-      let gridOut = false;
-      this.lastMoveTime = time;
+    // ブロック削除エフェクト中は操作不可
+    if (this.enableInput) {
 
-      // 全ての自分のブロックの行き先グリッドを確認し、他のブロックがあればhitGrid配列に追加
-      this.blocks.forEach(block => {
-        const checkGrid = {
-          x:block.gridX + moveDirection.x,
-          y:block.gridY + moveDirection.y
-        };
+      const hitGrids = [];
+      
+      if (moveDirection) {
+        let gridOut = false;
+        this.lastMoveTime = time;
 
-        if (checkGrid.x < 1 || checkGrid.x >= this.gridWidth || checkGrid.y < 1 || checkGrid.y >= this.gridHeight) {
-          gridOut = true;
-        } else if (this.grid[checkGrid.x][checkGrid.y]) {
-          hitGrids.push({ x: checkGrid.x, y:checkGrid.y });
+        // 全ての自分のブロックの行き先グリッドを確認し、他のブロックがあればhitGrid配列に追加
+        this.blocks.forEach(block => {
+          const checkGrid = {
+            x:block.gridX + moveDirection.x,
+            y:block.gridY + moveDirection.y
+          };
+
+          if (checkGrid.x < 1 || checkGrid.x >= this.gridWidth || checkGrid.y < 1 || checkGrid.y >= this.gridHeight) {
+            gridOut = true;
+          } else if (this.grid[checkGrid.x][checkGrid.y]) {
+            hitGrids.push({ x: checkGrid.x, y:checkGrid.y });
+          }
+        });
+
+        // hitGrid要素がない場合は移動先に移動、ある場合はhitGridにあるブロックを合体させる
+        if (hitGrids.length == 0) {
+          if (!gridOut) {
+            this.moveMyBlock(moveDirection);
+          }
+        } else {
+          this.joinBlock(hitGrids);
+          this.checkAndMarkBlocks(this.blocks, this.gridWidth, this.gridHeight);
+          this.blocks = this.removeMarkedBlocks(this.blocks);
+          this.separateBlocks();
         }
-      });
-
-      // hitGrid要素がない場合は移動先に移動、ある場合はhitGridにあるブロックを合体させる
-      if (hitGrids.length == 0) {
-        if (!gridOut) {
-          this.moveMyBlock(moveDirection);
-        }
-      } else {
-        this.joinBlock(hitGrids);
-        this.checkAndMarkBlocks(this.blocks, this.gridWidth, this.gridHeight);
-        this.blocks = this.removeMarkedBlocks(this.blocks);
-        this.separateBlocks();
       }
-    }
 
-    if (spaceJustDown) this.rotateMyBlock();
+      if (spaceJustDown) this.rotateMyBlock();
+
+    }
 
     // 設定値を更新
     this.moveSpeed = this.registry.get('movespeed');
@@ -338,6 +344,21 @@ export default class GameScene extends Phaser.Scene {
     return remainingBlocks;
   }
 
+  // addFX(block) {
+  //   const fx = block.preFX.addGlow(0xff0000, 0, 0, false);
+  //   console.log(fx);
+  //   this.tweens.add = ({
+  //     targets: fx,
+  //     outerStrength: { from: 0, to: 4 },
+  //     duration: 1000,
+  //     yoyo: true,
+  //     repeat: -1,
+  //     onComplete: () => {
+  //       block.preFX.remove(fx);
+  //     }
+  //   });
+  // }
+
   separateBlocks() {    // 分離処理　wallブロックと接していないブロック群を分離する　深さ優先探索
     let visited = Array(this.gridHeight).fill(null).map(() => Array(this.gridWidth).fill(false));
     let groups = [];
@@ -409,7 +430,6 @@ export default class GameScene extends Phaser.Scene {
 
     if (this.lifeBlocks.length <= 0) {
       this.timerEvent.remove();
-      // タイマー終了時の処理
       this.scene.start('EndingScene', { score: this.score});
     }
   }
