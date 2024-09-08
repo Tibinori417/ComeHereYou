@@ -1,5 +1,6 @@
 import Block from '../objects/Block.js';
 import BlockCollection from '../objects/blockCollection.js';
+import LifeBlocks from '../objects/LifeBlocks.js';
 
 export default class GameScene extends Phaser.Scene {
   constructor() {
@@ -22,6 +23,7 @@ export default class GameScene extends Phaser.Scene {
     this.checkOffset = -2;
     this.otherBlockSpacing = 5;
     this.lastMoveTime = 0.0;
+    this.lifeBlockSize = 15;
 
     // グリッドのサイズを設定
     this.gridWidth = 500;
@@ -67,6 +69,19 @@ export default class GameScene extends Phaser.Scene {
 
     // スコア表示
     this.scoreText = this.add.text(10, 10, `Score: ${this.score}`, { fontSize: '24px', fill: '#FFFFFF' }).setScrollFactor(0);
+
+    // 残り時間の設定
+    this.maxLife = 30; // MAXは30秒分
+    this.lifeBlocks = new LifeBlocks(this, 195, 22, this.lifeBlockSize).setScrollFactor(0);
+    for (let b = 0; b < this.maxLife; b++) {
+      this.lifeBlocks.addBlock(this);
+    }
+    this.timerEvent = this.time.addEvent({
+      delay: 1000, // 1秒ごと
+      callback: this.updateTimer,
+      callbackScope: this,
+      loop: true
+    });
 
     // ブロックのグループを初期化
     this.blocks = [];
@@ -155,6 +170,7 @@ export default class GameScene extends Phaser.Scene {
     this.children.bringToTop(this.setting);
     this.children.bringToTop(this.settingsMenu);
     this.children.bringToTop(this.scoreText);
+    this.children.bringToTop(this.lifeBlocks);
 
     // カメラの位置に基づいて背景を更新
     this.updateBackground();
@@ -310,6 +326,10 @@ export default class GameScene extends Phaser.Scene {
   removeMarkedBlocks(blocks) {
     const remainingBlocks = blocks.filter(block => {
       if (block.toBeRemoved) {
+        if (this.lifeBlocks.length <= 30) {
+          this.lifeBlocks.addBlock(this, block.type);
+        }
+
         block.destroy();
         return false;
       }
@@ -374,6 +394,23 @@ export default class GameScene extends Phaser.Scene {
     });
 
     this.blocks = hasWallGroup;
+  }
+
+  updateTimer() {   // １秒毎に実行される
+    this.lifeBlocks.removeAt(0);
+    this.lifeBlocks.list.forEach((block, index) => {
+      this.tweens.add({
+        targets: block,
+        x: index * (this.lifeBlockSize),
+        duration: 400,
+        ease: 'Power2'
+      });
+    });
+
+    if (this.timeLeft <= 0) {
+      this.timerEvent.remove();
+      // タイマー終了時の処理
+    }
   }
 
   updateBackground() {
