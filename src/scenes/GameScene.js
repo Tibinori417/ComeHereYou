@@ -17,6 +17,7 @@ export default class GameScene extends Phaser.Scene {
   create() {
     this.score = 0;
     this.blockCollectionCount = 1000;
+    this.freshID = 0;
     this.marginGrid = 4;
     this.checkOffset = -2;
     this.otherBlockSpacing = 5;
@@ -135,6 +136,7 @@ export default class GameScene extends Phaser.Scene {
         this.joinBlock(hitGrids);
         this.checkAndMarkBlocks(this.blocks, this.gridWidth, this.gridHeight);
         this.blocks = this.removeMarkedBlocks(this.blocks);
+        this.separateBlocks();
       }
     }
 
@@ -162,7 +164,7 @@ export default class GameScene extends Phaser.Scene {
   }
 
   createOtherBlocks() {   // 他のブロックをマップ上に生成する
-    for (let id = 0; id < this.blockCollectionCount; id++) {
+    for (let id = this.freshID; id < this.blockCollectionCount; id++) {
       let base;
       const shapetypes = this.shapeTypes;
       const shapetype = Phaser.Utils.Array.GetRandom(shapetypes);
@@ -176,6 +178,8 @@ export default class GameScene extends Phaser.Scene {
 
       const blockCollection = new BlockCollection(this, base, this.cellSize, id, shapetype);
       this.otherBlockCollections.push(blockCollection);
+
+      this.freshID++;
     }
   }
 
@@ -219,7 +223,7 @@ export default class GameScene extends Phaser.Scene {
     });
   }
 
-  rotateMyBlock(){
+  rotateMyBlock(){    // 回転処理
     const center = this.outputCenter();
 
     const checkGrid = {
@@ -253,7 +257,6 @@ export default class GameScene extends Phaser.Scene {
       block.gridY = centerGrid.y + rotatedGrid[index].y;
       block.setPosition(block.gridX * this.cellSize, block.gridY * this.cellSize);
     });
-    
     this.rotateSE.play();
   }
 
@@ -308,6 +311,64 @@ export default class GameScene extends Phaser.Scene {
       return true;
     });
     return remainingBlocks;
+  }
+
+  separateBlocks() {    // 分離処理　wallブロックと接していないブロック群を分離する　深さ優先探索
+    let visited = Array(this.gridHeight).fill(null).map(() => Array(this.gridWidth).fill(false));
+    let groups = [];
+
+    const dfs = (x, y, currentGroup) => {
+      if (x < 0 || x >= this.gridWidth || y < 0 || y >= this.gridHeight || visited[x][y]) {
+        return;
+      }
+
+      const dfsBlock = this.blocks.find(b => b.gridX === x && b.gridY === y);
+
+      if (dfsBlock !== undefined) {
+        visited[x][y] = true;
+        currentGroup.push(dfsBlock);
+
+        dfs(x - 1, y, currentGroup);
+        dfs(x + 1, y, currentGroup);
+        dfs(x, y - 1, currentGroup);
+        dfs(x, y + 1, currentGroup);
+      }
+    }
+
+    this.blocks.forEach(block => {
+      if (!visited[block.gridX][block.gridY]) {
+        let currentGroup = [];
+        dfs(block.gridX, block.gridY, currentGroup);
+        groups.push(currentGroup);
+      }
+    });
+    
+    let hasWallGroup = [];
+
+    groups.forEach(group => {
+      const hasWall = group.some(block => block.type === 'wall');
+
+      if (hasWall) {
+        hasWallGroup = group;
+      } else {
+        const blockCollection = new BlockCollection(this, { x: 0, y: 0}, this.cellSize, this.freshID, 'other', false);
+
+        group.forEach(block => {
+          blockCollection.formOtherBlocks(this, block);
+        });
+
+        this.otherBlockCollections.push(blockCollection);
+        group.forEach(block => {
+          block.toBeRemoved = true;
+        });
+        group = this.removeMarkedBlocks(group);
+
+        this.freshID++;
+      }
+      
+    });
+
+    this.blocks = hasWallGroup;
   }
 
   updateBackground() {

@@ -1,15 +1,21 @@
 import Block from "./Block.js";
 
 export default class BlockCollection {
-    constructor(scene, base, cellSize, id, type) {
+    constructor(scene, base, cellSize, id, type, initial = true) {
         this.blocks = [];
         this.base = base;
         this.cellSize = cellSize;
         this.id = id;
         this.type = type;
+
+        if (initial) {
+            this.initialGenerate(scene);
+        }
+    }
+
+    initialGenerate(scene) {
         this.shape = this.type2Shape(this.type);
         this.rotateTimes = Math.floor(Math.random() * 4);
-        
         const rotatedShape = this.rotateShape(this.shape, this.rotateTimes);
         this.shape = this.centerShape(rotatedShape);
         this.formBlocks(scene);
@@ -23,6 +29,12 @@ export default class BlockCollection {
             this.blocks.push(block);
             scene.grid[block.gridX][block.gridY] = block;
         });
+    }
+
+    formOtherBlocks(scene, block) {
+        const newBlock = new Block(scene, block.gridX, block.gridY, this.cellSize, this.id, block.type);
+        this.blocks.push(newBlock);
+        scene.grid[newBlock.gridX][newBlock.gridY] = newBlock;
     }
 
     rotateShape(shape, times = 0) {       // 90度回転をtimesの回数だけ適用する関数
