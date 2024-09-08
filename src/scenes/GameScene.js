@@ -401,15 +401,16 @@ export default class GameScene extends Phaser.Scene {
     this.lifeBlocks.list.forEach((block, index) => {
       this.tweens.add({
         targets: block,
-        x: index * (this.lifeBlockSize),
+        x: index * this.lifeBlockSize,
         duration: 400,
         ease: 'Power2'
       });
     });
 
-    if (this.timeLeft <= 0) {
+    if (this.lifeBlocks.length <= 0) {
       this.timerEvent.remove();
       // タイマー終了時の処理
+      this.scene.start('EndingScene', { score: this.score});
     }
   }
 
