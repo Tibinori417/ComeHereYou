@@ -115,6 +115,7 @@ export default class GameScene extends Phaser.Scene {
     const hitGrids = [];
   
     if (moveDirection) {
+      let gridOut = false;
       this.lastMoveTime = time;
 
       // 全ての自分のブロックの行き先グリッドを確認し、他のブロックがあればhitGrid配列に追加
@@ -124,14 +125,18 @@ export default class GameScene extends Phaser.Scene {
           y:block.gridY + moveDirection.y
         };
 
-        if (this.grid[checkGrid.x][checkGrid.y]) {
+        if (checkGrid.x < 1 || checkGrid.x >= this.gridWidth || checkGrid.y < 1 || checkGrid.y >= this.gridHeight) {
+          gridOut = true;
+        } else if (this.grid[checkGrid.x][checkGrid.y]) {
           hitGrids.push({ x: checkGrid.x, y:checkGrid.y });
         }
       });
 
       // hitGrid要素がない場合は移動先に移動、ある場合はhitGridにあるブロックを合体させる
       if (hitGrids.length == 0) {
-        this.moveMyBlock(moveDirection);
+        if (!gridOut) {
+          this.moveMyBlock(moveDirection);
+        }
       } else {
         this.joinBlock(hitGrids);
         this.checkAndMarkBlocks(this.blocks, this.gridWidth, this.gridHeight);
