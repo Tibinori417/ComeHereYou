@@ -25,6 +25,7 @@ export default class GameScene extends Phaser.Scene {
     this.lastMoveTime = 0.0;
     this.lifeBlockSize = 15;
     this.enableInput = true;
+    this.energyConsumptionInterval = 1000  // エネルギー消費間隔
 
     // グリッドのサイズを設定
     this.gridWidth = 500;
@@ -65,23 +66,23 @@ export default class GameScene extends Phaser.Scene {
     // 設定値を初期化
     this.registry.set('movespeed', 0.5); // 移動速度
     this.moveSpeed = this.registry.get('movespeed');
-    this.registry.set('soundvolume', 0.5);
-    this.sound.volume = this.registry.get('soundvolume') / 10; // 効果音量
+    this.registry.set('soundvolume', 0.5);   // 効果音量
+    this.sound.volume = this.registry.get('soundvolume') / 10;
 
     // スコア表示
     this.scoreText = this.add.text(10, 10, `Score: ${this.score}`, { fontSize: '24px', fill: '#FFFFFF' }).setScrollFactor(0);
 
-    // 残り時間の設定
+    // エネルギーの設定
     this.maxLife = 30; // MAXは30秒分
     this.lifeBlocks = new LifeBlocks(this, 195, 22, this.lifeBlockSize).setScrollFactor(0);
     for (let b = 0; b < this.maxLife; b++) {
       this.lifeBlocks.addBlock(this);
     }
     this.timerEvent = this.time.addEvent({
-      delay: 1000, // 1秒ごと
+      delay: this.energyConsumptionInterval, // 初めは1秒毎に消費、徐々にエネルギー消費速度が速くなる
       callback: this.updateTimer,
       callbackScope: this,
-      loop: true
+      loop: false
     });
 
     // ブロックのグループを初期化
@@ -416,7 +417,8 @@ export default class GameScene extends Phaser.Scene {
     this.blocks = hasWallGroup;
   }
 
-  updateTimer() {   // １秒毎に実行される
+  updateTimer() {   // ブロックエネルギー消費、this.energyConsumptionIntervalの時間毎に呼び出される
+    this.energyConsumptionInterval--;
     this.lifeBlocks.removeAt(0);
     this.lifeBlocks.list.forEach((block, index) => {
       this.tweens.add({
@@ -431,6 +433,13 @@ export default class GameScene extends Phaser.Scene {
       this.timerEvent.remove();
       this.scene.start('EndingScene', { score: this.score});
     }
+
+    this.timerEvent = this.time.addEvent({
+      delay: this.energyConsumptionInterval, // 初めは1秒毎に消費、徐々にエネルギー消費速度が速くなる
+      callback: this.updateTimer,
+      callbackScope: this,
+      loop: false
+    });
   }
 
   updateBackground() {
