@@ -25,7 +25,10 @@ export default class GameScene extends Phaser.Scene {
     this.lastMoveTime = 0.0;
     this.lifeBlockSize = 15;
     this.enableInput = true;
-    this.energyConsumptionInterval = 1000  // エネルギー消費間隔
+    this.energyConsumptionInterval = 1500;  // エネルギー消費間隔、初期は1.5秒間隔だが徐々にエネルギー消費が速くなる
+    this.additionalEnergyConsumption = 0;   // 本体の大きさによる追加で消費するエネルギー
+    this.myBlocksWidth;
+    this.myBlocksHeight;
 
     // グリッドのサイズを設定
     this.gridWidth = 500;
@@ -79,7 +82,7 @@ export default class GameScene extends Phaser.Scene {
       this.lifeBlocks.addBlock(this);
     }
     this.timerEvent = this.time.addEvent({
-      delay: this.energyConsumptionInterval, // 初めは1秒毎に消費、徐々にエネルギー消費速度が速くなる
+      delay: this.energyConsumptionInterval,
       callback: this.updateTimer,
       callbackScope: this,
       loop: false
@@ -434,8 +437,11 @@ export default class GameScene extends Phaser.Scene {
       this.scene.start('EndingScene', { score: this.score});
     }
 
+    // エネルギー消費の時間を算出、エネルギー消費間隔を基準に本体のサイズが大きいほどブロック数が多いほど消費が速くなる、サイズは重み2倍
+    let energyConsumptionDelay = Phaser.Math.Clamp(this.energyConsumptionInterval - this.myBlocksWidth / this.cellSize * 2 - this.myBlocksHeight / this.cellSize * 2 - this.blocks.length, 1, 1500);
+
     this.timerEvent = this.time.addEvent({
-      delay: this.energyConsumptionInterval, // 初めは1秒毎に消費、徐々にエネルギー消費速度が速くなる
+      delay: energyConsumptionDelay,
       callback: this.updateTimer,
       callbackScope: this,
       loop: false
@@ -457,13 +463,16 @@ export default class GameScene extends Phaser.Scene {
     this.scoreText.setText(`Score: ${this.score}`);
   }
 
-  outputCenter() {
+  outputCenter() {  // 本体の中心座標を求める関数
     const minX = Math.min(...this.blocks.map(b => b.x));
     const minY = Math.min(...this.blocks.map(b => b.y));
     const maxX = Math.max(...this.blocks.map(b => b.x));
     const maxY = Math.max(...this.blocks.map(b => b.y));
     const centerX = (maxX + minX) / 2;
     const centerY = (maxY + minY) / 2;
+
+    this.myBlocksWidth = maxX - minX;
+    this.myBlocksHeight = maxY - minY;
 
     return {
       x: centerX,
