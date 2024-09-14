@@ -1,6 +1,7 @@
 import GameScene from './src/scenes/GameScene.js';
 import SettingScene from './src/scenes/SettingScene.js';
 import EndingScene from './src/scenes/EndingScene.js';
+import NameInputScene from './src/scenes/NameInputScene.js';
 
 let game;
 
@@ -14,7 +15,7 @@ const config = {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.NO_CENTER,
   },
-  scene: [GameScene, SettingScene, EndingScene],
+  scene: [NameInputScene, GameScene, SettingScene, EndingScene],
   audio: {
     disableWebAudio: false
   },

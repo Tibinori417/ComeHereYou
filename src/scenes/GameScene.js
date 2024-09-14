@@ -7,6 +7,10 @@ export default class GameScene extends Phaser.Scene {
     super({ key: 'GameScene' });
   }
 
+  init(data) {
+    this.playerName = data.playerName;
+  }
+
   preload() {
     this.load.image('block', 'assets/block.png');
     this.load.image('backgroundTile', 'assets/background.png');
@@ -434,11 +438,11 @@ export default class GameScene extends Phaser.Scene {
 
     if (this.lifeBlocks.length <= 0) {
       this.timerEvent.remove();
-      this.scene.start('EndingScene', { score: this.score});
+      this.scene.start('EndingScene', { score: this.score, playerName: this.playerName });
     }
 
     // エネルギー消費の時間を算出、エネルギー消費間隔を基準に本体のサイズが大きいほどブロック数が多いほど消費が速くなる、サイズは重み2倍
-    let energyConsumptionDelay = Phaser.Math.Clamp(this.energyConsumptionInterval - this.myBlocksWidth / this.cellSize * 2 - this.myBlocksHeight / this.cellSize * 2 - this.blocks.length, 1, 1500);
+    let energyConsumptionDelay = Phaser.Math.Clamp(this.energyConsumptionInterval - this.myBlocksWidth / this.cellSize * 20 - this.myBlocksHeight / this.cellSize * 20 - this.blocks.length * 2, 1, 1500);
 
     this.timerEvent = this.time.addEvent({
       delay: energyConsumptionDelay,
