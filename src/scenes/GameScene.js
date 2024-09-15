@@ -167,8 +167,7 @@ export default class GameScene extends Phaser.Scene {
         } else {
           this.joinBlock(hitGrids);
           this.checkAndMarkBlocks(this.blocks, this.gridWidth, this.gridHeight);
-          this.blocks = this.removeMarkedBlocks(this.blocks);
-          this.separateBlocks();
+          this.completeFX(this.blocks);
         }
       }
 
@@ -337,8 +336,8 @@ export default class GameScene extends Phaser.Scene {
     
   }
   
-  removeMarkedBlocks(blocks) {
-    const remainingBlocks = blocks.filter(block => {
+  removeMarkedBlocks() {
+    this.blocks = this.blocks.filter(block => {
       if (block.toBeRemoved) {
         if (this.lifeBlocks.length <= 30) {
           this.lifeBlocks.addBlock(this, block.type);
@@ -349,23 +348,41 @@ export default class GameScene extends Phaser.Scene {
       }
       return true;
     });
-    return remainingBlocks;
   }
 
-  // addFX(block) {
-  //   const fx = block.preFX.addGlow(0xff0000, 0, 0, false);
-  //   console.log(fx);
-  //   this.tweens.add = ({
-  //     targets: fx,
-  //     outerStrength: { from: 0, to: 4 },
-  //     duration: 1000,
-  //     yoyo: true,
-  //     repeat: -1,
-  //     onComplete: () => {
-  //       block.preFX.remove(fx);
-  //     }
-  //   });
-  // }
+  completeFX(blocks) {
+    const completeBlocks = blocks.filter(b => b.toBeRemoved);
+
+    if (completeBlocks.length > 0) {
+      this.enableInput = false;
+
+      let tweensCompleted = 0;
+      const totalTweens = completeBlocks.length;
+
+      completeBlocks.forEach(b => {
+        this.tweens.add({
+          targets: b,
+          tint: {
+            from: b.tintTopLeft,
+            to: 0xffffff
+          },
+          ease: 'Cubic.easeInOut',
+          duration: 100,
+          repeat: 3,
+          yoyo: true,
+          onComplete: () => {
+            tweensCompleted++;
+
+            if (tweensCompleted === totalTweens) {
+              this.removeMarkedBlocks();
+              this.enableInput = true;
+              this.separateBlocks();  
+            }
+          }
+        });
+      });
+    }
+  }
 
   separateBlocks() {    // 分離処理　wallブロックと接していないブロック群を分離する　深さ優先探索
     let visited = Array(this.gridHeight).fill(null).map(() => Array(this.gridWidth).fill(false));
