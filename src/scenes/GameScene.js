@@ -193,6 +193,7 @@ export default class GameScene extends Phaser.Scene {
 
   createBlock(gridX, gridY, type) {   // 自分のブロックを生成する
     const block = new Block(this, gridX, gridY, this.cellSize, null, type);
+    block.brightColoring();
     this.blocks.push(block);
     return block;
   }

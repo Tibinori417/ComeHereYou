@@ -46,4 +46,37 @@ export default class Block extends Phaser.GameObjects.Sprite {
         break;
     }
   }
+
+  brightColoring() {
+    switch (this.type) {
+      case 'wall':
+        this.setTint(0xFFFFFF);
+        break;
+      case 'I':
+        this.setTint(0x88FFFF);
+        break;
+      case 'O':
+        this.setTint(0xFFFF55);
+        break;
+      case 'S':
+        this.setTint(0xAAFFAA);
+        break;
+      case 'Z':
+        this.setTint(0xFF4444);
+        break;
+      case 'J':
+        this.setTint(0x5555FF);
+        break;
+      case 'L':
+        this.setTint(0xFFCC55);
+        break;
+      case 'T':
+        this.setTint(0xAA55AA);
+        break;
+      default:
+        this.setTint(0x808080);
+        console.log("Type is Nothing.");
+        break;
+    }
+  }
 }

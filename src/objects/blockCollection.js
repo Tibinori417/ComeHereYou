@@ -84,7 +84,7 @@ export default class BlockCollection {
                     { x: 1, y: 1 }
                   ];
                 break;
-            case 'S':
+            case 'Z':
                 shape = [
                     { x: 1, y: 0 },
                     { x: 1, y: 1 },
@@ -92,7 +92,7 @@ export default class BlockCollection {
                     { x: 0, y: 2 }
                   ];
                 break;
-            case 'Z':
+            case 'S':
                 shape = [
                     { x: 0, y: 0 },
                     { x: 0, y: 1 },
