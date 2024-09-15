@@ -1,8 +1,11 @@
 export default class NameInputScene extends Phaser.Scene {
     constructor() {
         super('NameInputScene');
-        this.playerName = '';
         this.maxNameLength = 10;
+    }
+
+    init() {
+        this.playerName = '';
     }
 
     create() {

@@ -50,7 +50,7 @@ export default class EndingScene extends Phaser.Scene {
                 });
             }
         });
-        console.log(playerRank);
+
         // 自分のスコアの順位が10位以内にない場合、圏外表示を追加
         if (playerRank > 10) {
             
@@ -66,5 +66,26 @@ export default class EndingScene extends Phaser.Scene {
                 repeat: -1
             });
         }
+        console.log(this.scale.width, this.scale.height);
+        const backButton = this.add.text(this.scale.width / 2, this.scale.height - 100, 'Back to Start', { fontSize: '24px', fill: '#0000ff' })
+            .setInteractive()
+            .setOrigin(0.5)
+            .on('pointerdown', () => {
+                this.input.manager.canvas.style.cursor = 'default';
+                this.scene.start('NameInputScene');
+            });
+
+        backButton.on('pointerover', () => {
+            backButton.setStyle({ fill: '#ffffff' });
+            this.input.manager.canvas.style.cursor = 'pointer';
+        });
+        backButton.on('pointerout', () => {
+            backButton.setStyle({ fill: '#0000ff' });
+            this.input.manager.canvas.style.cursor = 'default';
+        });
+
+        this.input.keyboard.on('keydown-ENTER', () => {
+            this.scene.start('NameInputScene');
+        });
     }
 }

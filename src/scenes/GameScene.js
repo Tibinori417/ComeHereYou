@@ -18,6 +18,7 @@ export default class GameScene extends Phaser.Scene {
     this.load.audio('rotateSE', 'assets/rotateSound.mp3');
     this.load.audio('joinSE', 'assets/joinSound.mp3');
     this.load.audio('cantRotateSE', 'assets/cantRotateSound.mp3');
+    this.load.audio('completeSE', 'assets/completeSound.mp3');
   }
 
   create() {
@@ -112,6 +113,7 @@ export default class GameScene extends Phaser.Scene {
     this.rotateSE = this.sound.add('rotateSE');
     this.joinSE = this.sound.add('joinSE');
     this.cantRotateSE = this.sound.add('cantRotateSE');
+    this.completeSE = this.sound.add('completeSE');
 
     // 他のブロックをマップ上に配置
     this.createOtherBlocks();
@@ -388,6 +390,8 @@ export default class GameScene extends Phaser.Scene {
 
       let tweensCompleted = 0;
       const totalTweens = completeBlocks.length;
+
+      this.completeSE.play();
 
       completeBlocks.forEach(b => {
         this.tweens.add({
