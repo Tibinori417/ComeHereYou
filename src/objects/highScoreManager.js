@@ -15,11 +15,14 @@ export default class HighScoreManager {
     addScore(name, score) {
         this.highScores.push({ name, score });
         this.highScores.sort((a, b) => b.score - a.score);
-        this.highScores = this.highScores.slice(0, 10);  // Keep only top 10
         this.saveHighScores();
     }
 
     getTopScores(limit = 10) {
         return this.highScores.slice(0, limit);
+    }
+
+    getAllScores() {
+        return this.highScores;
     }
 }

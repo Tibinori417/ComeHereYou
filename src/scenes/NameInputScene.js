@@ -6,7 +6,7 @@ export default class NameInputScene extends Phaser.Scene {
     }
 
     create() {
-        this.add.text(400, 150, 'Enter Your Name:', {
+        this.add.text(400, 150, 'Enter Your Name', {
             fontSize: '32px',
             fill: '#ffffff'
         }).setOrigin(0.5);
@@ -39,18 +39,22 @@ export default class NameInputScene extends Phaser.Scene {
         // スタートボタン
         const startButton = this.add.text(400, 400, 'Start Game', {
             fontSize: '24px',
-            fill: '#ffffff',
-            backgroundColor: '#1a65ac',
+            fill: '#000000',
+            backgroundColor: '#555555',
             padding: { left: 10, right: 10, top: 5, bottom: 5 }
         }).setOrigin(0.5).setInteractive();
 
-        startButton.on('pointerdown', () => this.startGame());
+        startButton.on('pointerover', () => this.input.manager.canvas.style.cursor = 'pointer');
+        startButton.on('pointerout', () => this.input.manager.canvas.style.cursor = 'default');
+        startButton.on('pointerdown', () => {
+            this.startGame();
+        });
     }
 
     handleInput(event) {
         if (event.keyCode === 8 && this.playerName.length > 0) {
             // バックスペースキー
-            this.playerName = this.playerName.substr(0, this.playerName.length - 1);
+            this.playerName = this.playerName.substring(0, this.playerName.length - 1);
         } else if (event.keyCode === 13) {
             // Enterキー
             this.startGame();
@@ -78,6 +82,7 @@ export default class NameInputScene extends Phaser.Scene {
 
     startGame() {
         if (this.playerName.length > 0) {
+            this.input.manager.canvas.style.cursor = 'default';
             this.scene.start('GameScene', { playerName: this.playerName });
         } else {
             this.errorText.setText('Please enter a name').setVisible(true);
