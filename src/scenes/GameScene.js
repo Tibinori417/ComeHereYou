@@ -17,6 +17,7 @@ export default class GameScene extends Phaser.Scene {
     this.load.image('setting', 'assets/setting1.png');
     this.load.audio('rotateSE', 'assets/rotateSound.mp3');
     this.load.audio('joinSE', 'assets/joinSound.mp3');
+    this.load.audio('cantRotateSE', 'assets/cantRotateSound.mp3');
   }
 
   create() {
@@ -110,6 +111,7 @@ export default class GameScene extends Phaser.Scene {
     // 音声の設定
     this.rotateSE = this.sound.add('rotateSE');
     this.joinSE = this.sound.add('joinSE');
+    this.cantRotateSE = this.sound.add('cantRotateSE');
 
     // 他のブロックをマップ上に配置
     this.createOtherBlocks();
@@ -286,12 +288,40 @@ export default class GameScene extends Phaser.Scene {
       y: block.x + adjustmentGrid.y
     }));
 
-    this.blocks.forEach( (block, index) => {
-      block.gridX = centerGrid.x + rotatedGrid[index].x;
-      block.gridY = centerGrid.y + rotatedGrid[index].y;
-      block.setPosition(block.gridX * this.cellSize, block.gridY * this.cellSize);
-    });
-    this.rotateSE.play();
+    const rotatedBlocks = this.blocks.map( (block, index) => ({
+      ...block,
+      gridX: centerGrid.x + rotatedGrid[index].x,
+      gridY: centerGrid.y + rotatedGrid[index].y,
+    }));
+    
+    const noOverlap = rotatedBlocks.every( b => this.grid[b.gridX][b.gridY] === null);
+
+    if (noOverlap) {
+      this.blocks.forEach( (block, index) => {
+        block.gridX = rotatedBlocks[index].gridX;
+        block.gridY = rotatedBlocks[index].gridY;
+        block.setPosition(block.gridX * this.cellSize, block.gridY * this.cellSize);
+      });
+      this.rotateSE.play();
+    } else {
+      const graphics = this.add.graphics();
+
+      rotatedBlocks.forEach( block => {
+        graphics.fillStyle(0xFF9999, 0.5);
+        graphics.fillRect(block.gridX * this.cellSize - this.cellSize / 2, block.gridY * this.cellSize - this.cellSize / 2, this.cellSize, this.cellSize);
+      });
+
+      this.tweens.add({
+        targets: graphics,
+        alpha: 0,
+        duration: 100,
+        onComplete: () => {
+          graphics.destroy();
+        }
+      });
+
+      this.cantRotateSE.play();
+    }
   }
 
   checkAndMarkBlocks(blocks, gridWidth, gridHeight) {   // 3x3の範囲で自分のブロックが存在したらスコア加算
@@ -364,11 +394,11 @@ export default class GameScene extends Phaser.Scene {
           targets: b,
           tint: {
             from: b.tintTopLeft,
-            to: 0xffffff
+            to: 0x000000
           },
           ease: 'Cubic.easeInOut',
-          duration: 100,
-          repeat: 3,
+          duration: 50,
+          repeat: 4,
           yoyo: true,
           onComplete: () => {
             tweensCompleted++;
