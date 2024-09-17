@@ -57,6 +57,23 @@ export default class NameInputScene extends Phaser.Scene {
         startButton.on('pointerdown', () => {
             this.startGame();
         });
+
+        // ルールボタン
+        const ruleButton = this.add.text(600, 500, 'Rule', {
+            fontSize: '24px',
+            fill: '#0000ff',
+            padding: { left: 10, right: 10, top: 5, bottom: 5 }
+        }).setOrigin(0.5).setInteractive();
+
+        ruleButton.on('pointerover', () => {
+            ruleButton.setStyle({ fill: '#ffffff' });
+            this.input.manager.canvas.style.cursor = 'pointer'
+        });
+        ruleButton.on('pointerout', () => {
+            ruleButton.setStyle({ fill: '#0000ff' });
+            this.input.manager.canvas.style.cursor = 'default'
+        });
+        ruleButton.on('pointerdown', this.toggleRule, this);
     }
 
     handleInput(event) {
@@ -95,5 +112,11 @@ export default class NameInputScene extends Phaser.Scene {
         } else {
             this.errorText.setText('Please enter a name').setVisible(true);
         }
+    }
+
+    toggleRule() {
+        this.input.manager.canvas.style.cursor = 'default';
+        this.scene.launch('RuleScene');
+        this.scene.pause();
     }
 }

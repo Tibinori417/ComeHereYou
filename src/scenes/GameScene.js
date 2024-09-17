@@ -78,6 +78,18 @@ export default class GameScene extends Phaser.Scene {
     this.registry.set('soundvolume', 0.5);   // 効果音量
     this.sound.volume = this.registry.get('soundvolume') / 10;
 
+    // 各キーの状態を管理するオブジェクトを初期化
+    this.keyStates = {
+      left: { isDown: false, lastMoveTime: 0, nextMoveTime: 0 },
+      right: { isDown: false, lastMoveTime: 0, nextMoveTime: 0 },
+      up: { isDown: false, lastMoveTime: 0, nextMoveTime: 0 },
+      down: { isDown: false, lastMoveTime: 0, nextMoveTime: 0 },
+    };
+
+    // 初期のキー遅延と連続移動の間隔を設定（ミリ秒）
+    this.initialKeyDelay = 200; // 初回の遅延時間（調整可能）
+    this.keyRepeatInterval = 60; // 連続移動の間隔（調整可能）
+
     // スコア表示
     this.scoreText = this.add.text(10, 10, `Score: ${this.score}`, { fontSize: '24px', fill: '#FFFFFF' }).setScrollFactor(0);
 
@@ -120,34 +132,52 @@ export default class GameScene extends Phaser.Scene {
   }
 
   update(time) {
-    const { left, right, up, down } = this.cursors;
-    const spaceJustDown = Phaser.Input.Keyboard.JustDown(this.spaceKey);
 
-    // 移動処理1
+    this.keyRepeatInterval = 60 - this.moveSpeed * 50;
+
+    const keys = ['left', 'right', 'up', 'down'];
+    const directions = {
+      left: { x: -1, y: 0 },
+      right: { x: 1, y: 0 },
+      up: { x: 0, y: -1 },
+      down: { x: 0, y: 1 },
+    };
+
     let moveDirection = null;
-    const moveSpeed = 60 - this.moveSpeed * 50;
-    if (this.lastMoveTime + moveSpeed < time) {
-      if (left.isDown) {
-        moveDirection = { x: -1, y: 0 };
-      } else if (right.isDown) {
-        moveDirection = { x: 1, y: 0 };
-      } else if (up.isDown) {
-        moveDirection = { x: 0, y: -1 };
-      } else if (down.isDown) {
-        moveDirection = { x: 0, y: 1 };
+
+    for (let key of keys) {
+      const keyObj = this.cursors[key];
+      const keyState = this.keyStates[key];
+
+      if (keyObj.isDown) {
+        if (!keyState.isDown) {
+          // キーが新たに押されたとき
+          keyState.isDown = true;
+          keyState.lastMoveTime = time;
+          keyState.nextMoveTime = time + this.initialKeyDelay;
+
+          moveDirection = directions[key];
+          break; // 一度に一つの方向のみ処理
+        } else if (time >= keyState.nextMoveTime) {
+          // キーが押し続けられている場合
+          keyState.lastMoveTime = time;
+          keyState.nextMoveTime = time + this.keyRepeatInterval;
+
+          moveDirection = directions[key];
+          break; // 一度に一つの方向のみ処理
+        }
       } else {
-        this.lastMoveTime = 0.0;
+        // キーが離されたとき
+        keyState.isDown = false;
       }
     }
 
     // ブロック削除エフェクト中は操作不可
     if (this.enableInput) {
-
       const hitGrids = [];
       
       if (moveDirection) {
         let gridOut = false;
-        this.lastMoveTime = time;
 
         // 全ての自分のブロックの行き先グリッドを確認し、他のブロックがあればhitGrid配列に追加
         this.blocks.forEach(block => {
@@ -175,6 +205,8 @@ export default class GameScene extends Phaser.Scene {
         }
       }
 
+      // 回転処理
+      const spaceJustDown = Phaser.Input.Keyboard.JustDown(this.spaceKey);
       if (spaceJustDown) this.rotateMyBlock();
 
     }

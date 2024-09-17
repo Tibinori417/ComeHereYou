@@ -14,23 +14,38 @@ export default class SettingScene extends Phaser.Scene {
     let soundvolume = this.registry.get('soundvolume');
 
     // 設定メニュー背景
-    const menuBG = { x: 550, y: 300};
+    const menuBG = { x: 550, y: 400};
     const overlay = this.add.graphics();
     overlay.fillStyle(0x000000, 0.7); // 半透明の黒
     overlay.fillRect(this.scale.width / 2 - menuBG.x / 2, this.scale.height / 2 - menuBG.y / 2, menuBG.x, menuBG.y);
 
-    this.add.text(this.scale.width / 2, 180, 'Setting', { fontSize: '32px', fill: '#ffffff' }).setOrigin(0.5);
+    this.add.text(this.scale.width / 2, 130, 'Setting', { fontSize: '32px', fill: '#ffffff' }).setOrigin(0.5);
 
     // 設定項目
-    this.createSlider(510, 260, 'Movement Speed', movespeed, (value) => {
+    this.createSlider(510, 210, 'Movement Speed', movespeed, (value) => {
       this.registry.set('movespeed', value);
     });
-    this.createSlider(510, 340, 'Sound Volume', soundvolume, (value) => {
+    this.createSlider(510, 290, 'Sound Volume', soundvolume, (value) => {
       this.registry.set('soundvolume', value);
     });
 
+    // タイトルに戻る
+    this.add.text(155, 370, 'Back to title?', { fontSize: '20px', fill: '#fff' });
+    const backButton = this.add.text(510, 370, 'YES', { fontSize: '28px', fill: '#fff' })
+      .setOrigin(0.5)
+      .setInteractive();
+    backButton.on('pointerdown', this.backToTitle, this);
+    backButton.on('pointerover', () => {
+      this.input.manager.canvas.style.cursor = 'pointer';
+      backButton.setText('Realy?');
+    });
+    backButton.on('pointerout', () => {
+      this.input.manager.canvas.style.cursor = 'default';
+      backButton.setText('YES');
+    });
+
     // 閉じるボタン
-    const closeButton = this.add.text(400, 410, 'Close', { fontSize: '24px', fill: '#ffffff' })
+    const closeButton = this.add.text(400, 450, 'Close', { fontSize: '24px', fill: '#ffffff' })
       .setOrigin(0.5)
       .setInteractive();
     closeButton.on('pointerdown', this.closeMenu, this);
@@ -88,5 +103,10 @@ export default class SettingScene extends Phaser.Scene {
     this.input.manager.canvas.style.cursor = 'default';
     this.scene.stop();
     this.scene.resume('GameScene');
+  }
+
+  backToTitle() {
+    this.scene.stop('GameScene');
+    this.scene.start('NameInputScene');
   }
 }
