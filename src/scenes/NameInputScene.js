@@ -42,13 +42,18 @@ export default class NameInputScene extends Phaser.Scene {
         // スタートボタン
         const startButton = this.add.text(400, 400, 'Start Game', {
             fontSize: '24px',
-            fill: '#000000',
-            backgroundColor: '#555555',
+            fill: '#0000ff',
             padding: { left: 10, right: 10, top: 5, bottom: 5 }
         }).setOrigin(0.5).setInteractive();
 
-        startButton.on('pointerover', () => this.input.manager.canvas.style.cursor = 'pointer');
-        startButton.on('pointerout', () => this.input.manager.canvas.style.cursor = 'default');
+        startButton.on('pointerover', () => {
+            startButton.setStyle({ fill: '#ffffff' });
+            this.input.manager.canvas.style.cursor = 'pointer'
+        });
+        startButton.on('pointerout', () => {
+            startButton.setStyle({ fill: '#0000ff' });
+            this.input.manager.canvas.style.cursor = 'default'
+        });
         startButton.on('pointerdown', () => {
             this.startGame();
         });
