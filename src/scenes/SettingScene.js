@@ -19,29 +19,42 @@ export default class SettingScene extends Phaser.Scene {
     overlay.fillStyle(0x000000, 0.7); // 半透明の黒
     overlay.fillRect(this.scale.width / 2 - menuBG.x / 2, this.scale.height / 2 - menuBG.y / 2, menuBG.x, menuBG.y);
 
-    this.add.text(this.scale.width / 2, 130, 'Setting', { fontSize: '32px', fill: '#ffffff' }).setOrigin(0.5);
+    this.add.text(this.scale.width / 2, 130, '設定', {
+      fontFamily: '"Meiryo", "MS Gothic", sans-serif',
+      fontSize: '32px',
+      fill: '#ffffff'
+    }).setOrigin(0.5);
 
     // 設定項目
-    this.createSlider(510, 210, 'Movement Speed', movespeed, (value) => {
+    this.createSlider(510, 210, '移動速度', movespeed, (value) => {
       this.registry.set('movespeed', value);
     });
-    this.createSlider(510, 290, 'Sound Volume', soundvolume, (value) => {
+    this.createSlider(510, 290, '音量', soundvolume, (value) => {
       this.registry.set('soundvolume', value);
     });
 
     // タイトルに戻る
-    this.add.text(155, 370, 'Back to title?', { fontSize: '20px', fill: '#fff' });
-    const backButton = this.add.text(510, 370, 'YES', { fontSize: '28px', fill: '#fff' })
+    this.add.text(155, 370, 'タイトル画面に戻りますか？', {
+      fontFamily: '"Meiryo", "MS Gothic", sans-serif',
+      fontSize: '20px',
+      fill: '#fff'
+    })
+      .setOrigin(0, 0.5);
+    const backButton = this.add.text(510, 370, 'はい', {
+      fontFamily: '"Meiryo", "MS Gothic", sans-serif',
+      fontSize: '20px',
+      fill: '#fff'
+    })
       .setOrigin(0.5)
       .setInteractive();
     backButton.on('pointerdown', this.backToTitle, this);
     backButton.on('pointerover', () => {
       this.input.manager.canvas.style.cursor = 'pointer';
-      backButton.setText('Realy?');
+      backButton.setText('本当に？');
     });
     backButton.on('pointerout', () => {
       this.input.manager.canvas.style.cursor = 'default';
-      backButton.setText('YES');
+      backButton.setText('はい');
     });
 
     // 閉じるボタン
@@ -67,7 +80,11 @@ export default class SettingScene extends Phaser.Scene {
   }
 
   createSlider(x, y, label, settingvalue, onValueChange) {    // スライダー生成関数
-    this.add.text(x - 355, y, label, { fontSize: '20px', fill: '#fff' }).setOrigin(0, 0.5);
+    this.add.text(x - 355, y, label, {
+      fontFamily: '"Meiryo", "MS Gothic", sans-serif',
+      fontSize: '20px',
+      fill: '#fff'
+    }).setOrigin(0, 0.5);
     
     const track = this.add.image(x, y, 'slider').setOrigin(0.5)
     const handle = this.add.image(x, y, 'sliderHandle')

@@ -67,7 +67,11 @@ export default class EndingScene extends Phaser.Scene {
             });
         }
         console.log(this.scale.width, this.scale.height);
-        const backButton = this.add.text(this.scale.width / 2, this.scale.height - 100, 'Back to Start', { fontSize: '24px', fill: '#0000ff' })
+        const backButton = this.add.text(this.scale.width / 2, this.scale.height - 100, 'タイトルに戻る', {
+            fontFamily: '"Meiryo", "MS Gothic", sans-serif',
+            fontSize: '24px',
+            fill: '#0000ff'
+        })
             .setInteractive()
             .setOrigin(0.5)
             .on('pointerdown', () => {

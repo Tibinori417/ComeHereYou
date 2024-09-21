@@ -9,8 +9,15 @@ export default class NameInputScene extends Phaser.Scene {
     }
 
     create() {
-        this.add.text(400, 150, 'Enter Your Name', {
-            fontSize: '32px',
+        this.add.text(400, 100, 'ブロックリン', {
+            fontFamily: '"Meiryo", "MS Gothic", sans-serif',
+            fontSize: '48px',
+            fill: '#ffffff'
+        }).setOrigin(0.5);
+
+        this.add.text(400, 200, '名前を入力してください', {
+            fontFamily: '"Meiryo", "MS Gothic", sans-serif',
+            fontSize: '18px',
             fill: '#ffffff'
         }).setOrigin(0.5);
 
@@ -32,6 +39,7 @@ export default class NameInputScene extends Phaser.Scene {
 
         // エラーメッセージ（初期状態は非表示）
         this.errorText = this.add.text(400, 330, '', {
+            fontFamily: '"Meiryo", "MS Gothic", sans-serif',
             fontSize: '18px',
             fill: '#ff0000'
         }).setOrigin(0.5).setVisible(false);
@@ -40,7 +48,8 @@ export default class NameInputScene extends Phaser.Scene {
         this.input.keyboard.on('keydown', this.handleInput, this);
 
         // スタートボタン
-        const startButton = this.add.text(400, 400, 'Start Game', {
+        const startButton = this.add.text(400, 400, 'ゲームを開始', {
+            fontFamily: '"Meiryo", "MS Gothic", sans-serif',
             fontSize: '24px',
             fill: '#0000ff',
             padding: { left: 10, right: 10, top: 5, bottom: 5 }
@@ -59,7 +68,8 @@ export default class NameInputScene extends Phaser.Scene {
         });
 
         // ルールボタン
-        const ruleButton = this.add.text(600, 500, 'Rule', {
+        const ruleButton = this.add.text(600, 500, 'ルール', {
+            fontFamily: '"Meiryo", "MS Gothic", sans-serif',
             fontSize: '24px',
             fill: '#0000ff',
             padding: { left: 10, right: 10, top: 5, bottom: 5 }
@@ -110,7 +120,7 @@ export default class NameInputScene extends Phaser.Scene {
             this.input.manager.canvas.style.cursor = 'default';
             this.scene.start('GameScene', { playerName: this.playerName });
         } else {
-            this.errorText.setText('Please enter a name').setVisible(true);
+            this.errorText.setText('名前を入力してください').setVisible(true);
         }
     }
 

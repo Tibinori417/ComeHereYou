@@ -14,7 +14,11 @@ export default class RuleScene extends Phaser.Scene {
         overlay.fillRect(this.scale.width / 2 - menuBG.x / 2, this.scale.height / 2 - menuBG.y / 2, menuBG.x, menuBG.y);
 
         // タイトルテキスト
-        this.add.text(400, 100, 'Rule', { fontSize: '32px', fill: '#555' }).setOrigin(0.5);
+        this.add.text(400, 100, 'ルール', {
+            fontFamily: '"Meiryo", "MS Gothic", sans-serif',
+            fontSize: '32px',
+            fill: '#555'
+        }).setOrigin(0.5);
 
         // ルール説明テキスト
         const rulesText = [
@@ -28,11 +32,15 @@ export default class RuleScene extends Phaser.Scene {
         ];
 
         rulesText.forEach((rule, index) => {
-            this.add.text(70, 150 + index * 50, rule, { fontSize: '24px', fill: '#000' });
+            this.add.text(70, 150 + index * 50, rule, {
+                fontFamily: '"Meiryo", "MS Gothic", sans-serif',
+                fontSize: '24px',
+                fill: '#000'
+            });
         });
 
         // 開始ボタン
-        const startButton = this.add.text(400, 500, 'Back', { fontSize: '28px', fill: '#0f0' })
+        const startButton = this.add.text(400, 500, '戻る', { fontSize: '28px', fill: '#0f0' })
             .setOrigin(0.5)
             .setInteractive({ useHandCursor: true })
             .on('pointerdown', () => this.startGame());
