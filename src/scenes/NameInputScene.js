@@ -8,14 +8,25 @@ export default class NameInputScene extends Phaser.Scene {
         this.playerName = '';
     }
 
-    create() {
-        this.add.text(400, 100, 'ブロックリン', {
-            fontFamily: '"Meiryo", "MS Gothic", sans-serif',
-            fontSize: '48px',
-            fill: '#ffffff'
-        }).setOrigin(0.5);
+    preload() {
+        this.load.image('titleJa', 'assets/titleName_ja.png');
+        this.load.image('titleEn', 'assets/titleName_en.png');
+        this.load.image('markJa', 'assets/mark_ja.png');
+        this.load.image('markEn', 'assets/mark_en.png');
+    }
 
-        this.add.text(400, 200, '名前を入力してください', {
+    create() {
+        const titleiamge = {
+            ja: 'titleJa',
+            en: 'titleEn'
+        };
+        this.add.image( 400, 100, titleiamge[window.currentLanguage]).setOrigin(0.5);
+
+        const text1 = {
+            ja: "名前を入力してください",
+            en: "Enter player name"
+        };
+        this.add.text(400, 200, text1[window.currentLanguage], {
             fontFamily: '"Meiryo", "MS Gothic", sans-serif',
             fontSize: '18px',
             fill: '#ffffff'
@@ -48,7 +59,11 @@ export default class NameInputScene extends Phaser.Scene {
         this.input.keyboard.on('keydown', this.handleInput, this);
 
         // スタートボタン
-        const startButton = this.add.text(400, 400, 'ゲームを開始', {
+        const text2 = {
+            ja: "ゲーム開始",
+            en: "Start Game"
+        };
+        const startButton = this.add.text(400, 400, text2[window.currentLanguage], {
             fontFamily: '"Meiryo", "MS Gothic", sans-serif',
             fontSize: '24px',
             fill: '#0000ff',
@@ -68,7 +83,11 @@ export default class NameInputScene extends Phaser.Scene {
         });
 
         // ルールボタン
-        const ruleButton = this.add.text(600, 500, 'ルール', {
+        const text3 = {
+            ja: "ルール",
+            en: "Rules"
+        };
+        const ruleButton = this.add.text(600, 500, text3[window.currentLanguage], {
             fontFamily: '"Meiryo", "MS Gothic", sans-serif',
             fontSize: '24px',
             fill: '#0000ff',
@@ -84,6 +103,21 @@ export default class NameInputScene extends Phaser.Scene {
             this.input.manager.canvas.style.cursor = 'default'
         });
         ruleButton.on('pointerdown', this.toggleRule, this);
+
+        // 言語切り替えボタン
+        const languageimage = {
+            ja: 'markJa',
+            en: 'markEn'
+        };
+        const languageButton = this.add.image(50, 550, languageimage[window.currentLanguage]).setInteractive();
+        languageButton.setDisplaySize(20, 15);
+        languageButton.on('pointerdown', this.switchLanguage, this);
+        languageButton.on('pointerover', () => {
+        this.input.manager.canvas.style.cursor = 'pointer';
+        });
+        languageButton.on('pointerout', () => {
+        this.input.manager.canvas.style.cursor = 'default';
+        });
     }
 
     handleInput(event) {
@@ -116,11 +150,15 @@ export default class NameInputScene extends Phaser.Scene {
     }
 
     startGame() {
+        const text4 = {
+            ja: "名前を入力してください",
+            en: "Please enter player name"
+        };
         if (this.playerName.length > 0) {
             this.input.manager.canvas.style.cursor = 'default';
             this.scene.start('GameScene', { playerName: this.playerName });
         } else {
-            this.errorText.setText('名前を入力してください').setVisible(true);
+            this.errorText.setText(text4[window.currentLanguage]).setVisible(true);
         }
     }
 
@@ -128,5 +166,10 @@ export default class NameInputScene extends Phaser.Scene {
         this.input.manager.canvas.style.cursor = 'default';
         this.scene.launch('RuleScene');
         this.scene.pause();
+    }
+
+    switchLanguage() {
+        window.currentLanguage = window.currentLanguage === 'en' ? 'ja' : 'en';
+        this.scene.restart();
     }
 }

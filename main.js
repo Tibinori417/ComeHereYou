@@ -5,6 +5,7 @@ import NameInputScene from './src/scenes/NameInputScene.js';
 import RuleScene from './src/scenes/RuleScene.js';
 
 let game;
+window.currentLanguage = 'ja';
 
 const config = {
   type: Phaser.AUTO,

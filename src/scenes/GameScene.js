@@ -23,7 +23,7 @@ export default class GameScene extends Phaser.Scene {
 
   create() {
     this.score = 0;
-    this.blockCollectionCount = 1000;
+    this.blockCollectionCount = 4000;
     this.freshID = 0;
     this.marginGrid = 4;
     this.checkOffset = -2;
@@ -37,8 +37,8 @@ export default class GameScene extends Phaser.Scene {
     this.myBlocksHeight;
 
     // グリッドのサイズを設定
-    this.gridWidth = 500;
-    this.gridHeight = 500;
+    this.gridWidth = 1000;
+    this.gridHeight = 1000;
     this.cellSize = 25;
 
     // グリッドの初期化

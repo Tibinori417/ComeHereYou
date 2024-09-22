@@ -19,28 +19,48 @@ export default class SettingScene extends Phaser.Scene {
     overlay.fillStyle(0x000000, 0.7); // 半透明の黒
     overlay.fillRect(this.scale.width / 2 - menuBG.x / 2, this.scale.height / 2 - menuBG.y / 2, menuBG.x, menuBG.y);
 
-    this.add.text(this.scale.width / 2, 130, '設定', {
+    const text1 = {
+      ja: "設定",
+      en: "Settings"
+    };
+    this.add.text(this.scale.width / 2, 130, text1[window.currentLanguage], {
       fontFamily: '"Meiryo", "MS Gothic", sans-serif',
       fontSize: '32px',
       fill: '#ffffff'
     }).setOrigin(0.5);
 
     // 設定項目
-    this.createSlider(510, 210, '移動速度', movespeed, (value) => {
+    const text2 = {
+      ja: "移動速度",
+      en: "Movement Speed"
+    };
+    this.createSlider(510, 210, text2[window.currentLanguage], movespeed, (value) => {
       this.registry.set('movespeed', value);
     });
-    this.createSlider(510, 290, '音量', soundvolume, (value) => {
+    const text3 = {
+      ja: "音量",
+      en: "Sound Volume"
+    };
+    this.createSlider(510, 290, text3[window.currentLanguage], soundvolume, (value) => {
       this.registry.set('soundvolume', value);
     });
 
     // タイトルに戻る
-    this.add.text(155, 370, 'タイトル画面に戻りますか？', {
+    const text4 = {
+      ja: "タイトルに戻りますか？",
+      en: "Return to title?"
+    };
+    this.add.text(155, 370, text4[window.currentLanguage], {
       fontFamily: '"Meiryo", "MS Gothic", sans-serif',
       fontSize: '20px',
       fill: '#fff'
     })
       .setOrigin(0, 0.5);
-    const backButton = this.add.text(510, 370, 'はい', {
+    const text5 = {
+      ja: "はい",
+      en: "Yes",
+    };
+    const backButton = this.add.text(510, 370, text5[window.currentLanguage], {
       fontFamily: '"Meiryo", "MS Gothic", sans-serif',
       fontSize: '20px',
       fill: '#fff'
@@ -50,14 +70,22 @@ export default class SettingScene extends Phaser.Scene {
     backButton.on('pointerdown', this.backToTitle, this);
     backButton.on('pointerover', () => {
       this.input.manager.canvas.style.cursor = 'pointer';
-      backButton.setText('本当に？');
+      const text6 = {
+        ja: "本当に？",
+        en: "Are you sure?"
+      };
+      backButton.setText(text6[window.currentLanguage]);
     });
     backButton.on('pointerout', () => {
       this.input.manager.canvas.style.cursor = 'default';
-      backButton.setText('はい');
+      backButton.setText(text5[window.currentLanguage]);
     });
 
     // 閉じるボタン
+    const text7 = {
+      ja: "閉じる",
+      en: "Close"
+    };
     const closeButton = this.add.text(400, 450, 'Close', { fontSize: '24px', fill: '#ffffff' })
       .setOrigin(0.5)
       .setInteractive();
