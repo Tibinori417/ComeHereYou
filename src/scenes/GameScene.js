@@ -19,11 +19,12 @@ export default class GameScene extends Phaser.Scene {
     this.load.audio('joinSE', 'assets/joinSound.mp3');
     this.load.audio('cantRotateSE', 'assets/cantRotateSound.mp3');
     this.load.audio('completeSE', 'assets/completeSound.mp3');
+    this.load.audio('bgm', 'assets/bgm_gameScene3.mp3');
   }
 
   create() {
     this.score = 0;
-    this.blockCollectionCount = 4000;
+    this.blockCollectionCount = 2000;
     this.freshID = 0;
     this.marginGrid = 4;
     this.checkOffset = -2;
@@ -126,6 +127,10 @@ export default class GameScene extends Phaser.Scene {
     this.joinSE = this.sound.add('joinSE');
     this.cantRotateSE = this.sound.add('cantRotateSE');
     this.completeSE = this.sound.add('completeSE');
+
+    // BGM
+    this.bgm = this.sound.add('bgm', { volume: 1.0, loop: true});
+    this.bgm.play();
 
     // 他のブロックをマップ上に配置
     this.createOtherBlocks();
@@ -522,6 +527,7 @@ export default class GameScene extends Phaser.Scene {
 
     if (this.lifeBlocks.length <= 0) {
       this.timerEvent.remove();
+      this.sound.stopAll();
       this.scene.start('EndingScene', { score: this.score, playerName: this.playerName });
     }
 

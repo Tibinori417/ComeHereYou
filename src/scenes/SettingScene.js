@@ -151,6 +151,7 @@ export default class SettingScene extends Phaser.Scene {
   }
 
   backToTitle() {
+    this.sound.stopAll();
     this.scene.stop('GameScene');
     this.scene.start('NameInputScene');
   }
