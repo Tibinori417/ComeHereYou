@@ -13,6 +13,9 @@ export default class NameInputScene extends Phaser.Scene {
         this.load.image('titleEn', 'assets/titleName_en.png');
         this.load.image('markJa', 'assets/mark_ja.png');
         this.load.image('markEn', 'assets/mark_en.png');
+        this.load.audio('enterSE', 'assets/enterSound_maou_se_8bit25.mp3');
+        this.load.audio('titleBGM', 'assets/bgm_titleScene_maou_game_rock45.mp3');
+        this.load.audio('typingSE', 'assets/enterSound_maou_se_system45.mp3');
     }
 
     create() {
@@ -87,12 +90,12 @@ export default class NameInputScene extends Phaser.Scene {
             ja: "ルール",
             en: "Rules"
         };
-        const ruleButton = this.add.text(600, 500, text3[window.currentLanguage], {
+        const ruleButton = this.add.text(790, 560, text3[window.currentLanguage], {
             fontFamily: '"Meiryo", "MS Gothic", sans-serif',
             fontSize: '24px',
             fill: '#0000ff',
             padding: { left: 10, right: 10, top: 5, bottom: 5 }
-        }).setOrigin(0.5).setInteractive();
+        }).setOrigin(1.0, 1.0).setInteractive();
 
         ruleButton.on('pointerover', () => {
             ruleButton.setStyle({ fill: '#ffffff' });
@@ -104,12 +107,36 @@ export default class NameInputScene extends Phaser.Scene {
         });
         ruleButton.on('pointerdown', this.toggleRule, this);
 
+        // クレジットボタン
+        const text4 = {
+            ja: "クレジット",
+            en: "Credits"
+        };
+        const creditsButton = this.add.text(790, 590, text4[window.currentLanguage], {
+            fontFamily: '"Meiryo", "MS Gothic", sans-serif',
+            fontSize: '24px',
+            fill: '#0000ff',
+            padding: { left: 10, right: 10, top: 5, bottom: 5 }
+        }).setOrigin(1.0, 1.0).setInteractive();
+
+        creditsButton.on('pointerover', () => {
+            creditsButton.setStyle({ fill: '#ffffff' });
+            this.input.manager.canvas.style.cursor = 'pointer'
+        });
+        creditsButton.on('pointerout', () => {
+            creditsButton.setStyle({ fill: '#0000ff' });
+            this.input.manager.canvas.style.cursor = 'default'
+        });
+        creditsButton.on('pointerdown', this.toggleCredits, this);
+
         // 言語切り替えボタン
         const languageimage = {
             ja: 'markJa',
             en: 'markEn'
         };
-        const languageButton = this.add.image(50, 550, languageimage[window.currentLanguage]).setInteractive();
+        const languageButton = this.add.image(10, 590, languageimage[window.currentLanguage])
+            .setOrigin(0, 1.0)
+            .setInteractive();
         languageButton.setDisplaySize(20, 15);
         languageButton.on('pointerdown', this.switchLanguage, this);
         languageButton.on('pointerover', () => {
@@ -118,6 +145,12 @@ export default class NameInputScene extends Phaser.Scene {
         languageButton.on('pointerout', () => {
         this.input.manager.canvas.style.cursor = 'default';
         });
+
+        // BGM、効果音
+        this.enterSE = this.sound.add('enterSE');
+        this.typingSE = this.sound.add('typingSE');
+        this.titleBGM = this.sound.add('titleBGM');
+        this.titleBGM.play();
     }
 
     handleInput(event) {
@@ -144,6 +177,7 @@ export default class NameInputScene extends Phaser.Scene {
             this.charCountText.setColor('#ff0000');
         } else {
             this.charCountText.setColor('#cccccc');
+            this.typingSE.play();
         }
 
         this.errorText.setVisible(false);
@@ -155,6 +189,8 @@ export default class NameInputScene extends Phaser.Scene {
             en: "Please enter player name"
         };
         if (this.playerName.length > 0) {
+            this.sound.stopAll();
+            this.enterSE.play();
             this.input.manager.canvas.style.cursor = 'default';
             this.scene.start('GameScene', { playerName: this.playerName });
         } else {
@@ -168,8 +204,15 @@ export default class NameInputScene extends Phaser.Scene {
         this.scene.pause();
     }
 
+    toggleCredits() {
+        this.input.manager.canvas.style.cursor = 'default';
+        this.scene.launch('CreditsScene');
+        this.scene.pause();
+    }
+
     switchLanguage() {
         window.currentLanguage = window.currentLanguage === 'en' ? 'ja' : 'en';
+        this.sound.stopAll();
         this.scene.restart();
     }
 }

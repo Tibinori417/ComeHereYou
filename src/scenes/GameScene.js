@@ -19,7 +19,7 @@ export default class GameScene extends Phaser.Scene {
     this.load.audio('joinSE', 'assets/joinSound.mp3');
     this.load.audio('cantRotateSE', 'assets/cantRotateSound.mp3');
     this.load.audio('completeSE', 'assets/completeSound.mp3');
-    this.load.audio('bgm', 'assets/bgm_gameScene3.mp3');
+    this.load.audio('bgm', 'assets/bgm_gameScene3_maou_game_rock52.mp3');
   }
 
   create() {
@@ -95,7 +95,7 @@ export default class GameScene extends Phaser.Scene {
     this.scoreText = this.add.text(10, 10, `Score: ${this.score}`, { fontSize: '24px', fill: '#FFFFFF' }).setScrollFactor(0);
 
     // エネルギーの設定
-    this.maxLife = 30; // MAXは30秒分
+    this.maxLife = 3; // MAXは30秒分
     this.lifeBlocks = new LifeBlocks(this, 195, 22, this.lifeBlockSize).setScrollFactor(0);
     for (let b = 0; b < this.maxLife; b++) {
       this.lifeBlocks.addBlock(this);
@@ -218,7 +218,7 @@ export default class GameScene extends Phaser.Scene {
 
     // 設定値を更新
     this.moveSpeed = this.registry.get('movespeed');
-    this.sound.volume = this.registry.get('soundvolume') / 10;
+    this.sound.volume = this.registry.get('soundvolume');
 
     // 設定ボタンやスコアテキストを最前面に設定
     this.children.bringToTop(this.setting);

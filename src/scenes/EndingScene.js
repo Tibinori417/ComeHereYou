@@ -13,10 +13,16 @@ export default class EndingScene extends Phaser.Scene {
     }
 
     preload() {
-
+        this.load.audio('endingBGM', 'assets/bgm_endingScene_maou_game_rock15.mp3');
+        this.load.audio('backSE', 'assets/backSound_maou_se_system32.mp3');
     }
 
     create() {
+        // BGM、効果音
+        this.endingBGM = this.sound.add('endingBGM');
+        this.endingBGM.play();
+        this.backSE = this.sound.add('backSE');
+        
         // スコアを追加
         this.highScoreManager.addScore(this.playerName, this.score);
 
@@ -79,6 +85,8 @@ export default class EndingScene extends Phaser.Scene {
             .setInteractive()
             .setOrigin(0.5)
             .on('pointerdown', () => {
+                this.sound.stopAll();
+                this.backSE.play();
                 this.input.manager.canvas.style.cursor = 'default';
                 this.scene.start('NameInputScene');
             });
@@ -95,5 +103,17 @@ export default class EndingScene extends Phaser.Scene {
         this.input.keyboard.on('keydown-ENTER', () => {
             this.scene.start('NameInputScene');
         });
+
+        // クレジット
+        const text2 = {
+            ja: "音楽：魔王魂",
+            en: "Music : MaouDamashii"
+        };
+        this.add.text(800, 600, text2[window.currentLanguage], { 
+            font: '20px Arial', 
+            fill: '#ffffff', 
+            align: 'left',
+            wordWrap: { width: 600 }
+        }).setOrigin(1.0, 1.0);
     }
 }

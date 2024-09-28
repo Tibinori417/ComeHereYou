@@ -3,6 +3,7 @@ import SettingScene from './src/scenes/SettingScene.js';
 import EndingScene from './src/scenes/EndingScene.js';
 import NameInputScene from './src/scenes/NameInputScene.js';
 import RuleScene from './src/scenes/RuleScene.js';
+import CreditsScene from './src/scenes/CreditsScene.js'
 
 let game;
 window.currentLanguage = 'ja';
@@ -17,7 +18,7 @@ const config = {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.NO_CENTER,
   },
-  scene: [NameInputScene, RuleScene, GameScene, SettingScene, EndingScene],
+  scene: [NameInputScene, RuleScene, GameScene, SettingScene, EndingScene, CreditsScene],
   audio: {
     disableWebAudio: false
   },
