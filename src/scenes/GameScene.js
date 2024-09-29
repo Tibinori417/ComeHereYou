@@ -15,13 +15,20 @@ export default class GameScene extends Phaser.Scene {
     this.load.image('block', 'assets/block.png');
     this.load.image('backgroundTile', 'assets/background.png');
     this.load.image('setting', 'assets/setting1.png');
+    this.load.image('particle1', 'assets/particle1_pipo-hiteffect010.png');
     this.load.audio('rotateSE', 'assets/rotateSound.mp3');
     this.load.audio('joinSE', 'assets/joinSound.mp3');
     this.load.audio('cantRotateSE', 'assets/cantRotateSound.mp3');
     this.load.audio('completeSE1', 'assets/completeSound1.mp3');
     this.load.audio('completeSE2', 'assets/completeSound2_maou_se_magical02.mp3');
     this.load.audio('completeSE3', 'assets/completeSound3_maou_se_magical21.mp3');
+    this.load.audio('completeSE4', 'assets/brackholeSound_maou_se_magic_fire12.mp3');
     this.load.audio('bgm', 'assets/bgm_gameScene3_maou_game_rock52.mp3');
+    this.load.spritesheet('blackhole', 'assets/brackhole_pipo-mapeffect015_480.png', {
+      frameWidth: 480,
+      frameHeight: 480,
+      endFrame: 9
+    });
   }
 
   create() {
@@ -34,7 +41,7 @@ export default class GameScene extends Phaser.Scene {
     this.lastMoveTime = 0.0;
     this.lifeBlockSize = 15;
     this.enableInput = true;
-    this.energyConsumptionInterval = 1500;  // エネルギー消費間隔、初期は1.5秒間隔だが徐々にエネルギー消費が速くなる
+    this.energyConsumptionInterval = 2000;  // エネルギー消費間隔、徐々にエネルギー消費が速くなる
     this.additionalEnergyConsumption = 0;   // 本体の大きさによる追加で消費するエネルギー
     this.myBlocksWidth;
     this.myBlocksHeight;
@@ -132,10 +139,19 @@ export default class GameScene extends Phaser.Scene {
     this.completeSE1 = this.sound.add('completeSE1');
     this.completeSE2 = this.sound.add('completeSE2');
     this.completeSE3 = this.sound.add('completeSE3');
+    this.completeSE4 = this.sound.add('completeSE4');
 
     // BGM
     this.bgm = this.sound.add('bgm', { volume: 1.0, loop: true});
     this.bgm.play();
+
+    // ブラックホールのアニメーションを作成
+    this.anims.create({
+      key: 'blackhole_anim',
+      frames: this.anims.generateFrameNumbers('blackhole', { start: 0, end: 9 }),
+      frameRate: 10,
+      repeat: -1
+    });
 
     // 他のブロックをマップ上に配置
     this.createOtherBlocks();
@@ -409,11 +425,13 @@ export default class GameScene extends Phaser.Scene {
     
   }
   
-  removeMarkedBlocks() {
+  removeMarkedBlocks(energyUP = false) {
     this.blocks = this.blocks.filter(block => {
       if (block.toBeRemoved) {
         if (this.lifeBlocks.length <= 30) {
-          this.lifeBlocks.addBlock(this, block.type);
+          if (energyUP) {
+            this.lifeBlocks.addBlock(this, block.type);
+          }
         }
 
         block.destroy();
@@ -433,8 +451,9 @@ export default class GameScene extends Phaser.Scene {
       const totalTweens = completeBlocks.length;
 
       let effectLevel = 1;
-      if (this.earnedScore >= 27) effectLevel = 2;
-      if (this.earnedScore >= 102) effectLevel = 3;
+      if (this.earnedScore >= 18) effectLevel = 2;
+      if (this.earnedScore >= 66) effectLevel = 3;
+      effectLevel = 4;
 
       if (effectLevel === 1) {
         this.completeSE1.play();
@@ -442,6 +461,26 @@ export default class GameScene extends Phaser.Scene {
         this.completeSE2.play();
       } else if (effectLevel === 3) {
         this.completeSE3.play();
+      } else if (effectLevel === 4) {
+        this.completeSE4.play();
+
+        const blackhole = this.add.sprite(400, 300, 'blackhole')
+          .setScrollFactor(0)
+          .setScale(0);
+        blackhole.depth = 10; // 他のスプライトより前面に表示
+        blackhole.play('blackhole_anim'); // アニメーションを再生
+
+        // ブラックホールのアニメーション（拡大）
+        this.tweens.add({
+          targets: blackhole,
+          scale: 1,
+          duration: 2000,
+          ease: 'Power1',
+          onComplete: () => {
+              // ブロックをブラックホールに吸い込む
+              // this.absorbBlocksIntoBlackhole(blocks, blackhole);
+          }
+        });
       }
 
       completeBlocks.forEach(b => {
@@ -449,7 +488,7 @@ export default class GameScene extends Phaser.Scene {
         let tweenConfig = {
           targets: b,
           ease: 'Cubic.easeInOut',
-          duration: 200,
+          duration: 300,
           repeat: 0,
           yoyo: false,
           onComplete: () => {
@@ -457,7 +496,7 @@ export default class GameScene extends Phaser.Scene {
 
             if (tweensCompleted === totalTweens) {
                 this.updateScore(this.earnedScore);
-                this.removeMarkedBlocks();
+                this.removeMarkedBlocks(true);
                 this.enableInput = true;
                 this.separateBlocks();
             }
@@ -466,20 +505,42 @@ export default class GameScene extends Phaser.Scene {
 
         // レベルごとのエフェクトを設定
         if (effectLevel === 1) {
-          // レベル1：シンプルな縮小アニメーション
-          tweenConfig.scale = { from: 1, to: 0 };
-          tweenConfig.alpha = { from: 1, to: 0 };
+          // レベル1：点滅
+          tweenConfig.tint = { from: b.tintTopLeft, to: 0x000000 };
+          tweenConfig.duration = 50;
+          tweenConfig.repeat = 4;
+          tweenConfig.yoyo = true;
+          tweenConfig.alpha = { from: 1, to: 0.5 };
         } else if (effectLevel === 2) {
-          // レベル2：色変化と縮小
-          tweenConfig.scale = { from: 1, to: 0 };
-          tweenConfig.alpha = { from: 1, to: 0 };
-          tweenConfig.tint = { from: 0xffffff, to: 0xffd700 }; // ゴールド色
+          // レベル2：だんだん小さく、回転しながら、ちょっと長め
+          tweenConfig.scale = { from: 0.8, to: 0 };
+          tweenConfig.angle = 360;
+          tweenConfig.duration = 400;
         } else if (effectLevel === 3) {
           // レベル3：パーティクルとカメラシェイクを追加
-          tweenConfig.scale = { from: 1, to: 0 };
-          tweenConfig.alpha = { from: 1, to: 0 };
+          tweenConfig.scale = { from: 0.5, to: 0.2 };
+          tweenConfig.alpha = { from: 1, to: 0.5 };
           tweenConfig.tint = { from: 0xffffff, to: 0xff4500 }; // オレンジレッド
-          this.createParticles(b.x, b.y);
+
+          // パーティクルエミッターを設定
+          const emitterLife = 1500;
+          const emitter = this.add.particles(0, 0, 'particle1', {
+            x: b.x,
+            y: b.y,
+            speed: { min: 100, max: 200 },
+            angle: { min: 0, max: 360 },
+            scale: { start: 0.2, end: 0 },
+            lifespan: emitterLife,
+            blendMode: 'ADD',
+            quantity: 1
+          });
+
+          emitter.explode(2);
+
+          this.time.delayedCall(emitterLife, () => {
+            emitter.stop();
+            emitter.destroy();
+          });
         }
 
         this.tweens.add(tweenConfig);
@@ -487,22 +548,9 @@ export default class GameScene extends Phaser.Scene {
 
       // レベル3の場合、カメラシェイクを実行
       if (effectLevel === 3) {
-        this.cameras.main.shake(300, 0.02);
+        this.cameras.main.shake(700, 0.01);
       }
     }
-  }
-
-  createParticles(x, y) {   // パーティクルエフェクトを生成する関数
-    const particles = this.add.particles('particleImage'); // 'particleImage'は事前にロードした画像キー
-    const emitter = particles.createEmitter({
-      x: x,
-      y: y,
-      speed: { min: -200, max: 200 },
-      angle: { min: 0, max: 360 },
-      scale: { start: 0.5, end: 0 },
-      lifespan: 500,
-      blendMode: 'ADD'
-    });
   }
 
   separateBlocks() {    // 分離処理　wallブロックと接していないブロック群を分離する　深さ優先探索
@@ -553,7 +601,7 @@ export default class GameScene extends Phaser.Scene {
         group.forEach(block => {
           block.toBeRemoved = true;
         });
-        group = this.removeMarkedBlocks(group);
+        this.removeMarkedBlocks();
 
         this.freshID++;
       }
@@ -564,7 +612,7 @@ export default class GameScene extends Phaser.Scene {
   }
 
   updateTimer() {   // ブロックエネルギー消費、this.energyConsumptionIntervalの時間毎に呼び出される
-    this.energyConsumptionInterval--;
+    this.energyConsumptionInterval -= 2;
     this.lifeBlocks.removeAt(0);
     this.lifeBlocks.list.forEach((block, index) => {
       this.tweens.add({

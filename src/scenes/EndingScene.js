@@ -48,8 +48,8 @@ export default class EndingScene extends Phaser.Scene {
             if (playerRank === index + 1) {
                 this.tweens.add({
                     targets: scoreText,
-                    alpha: 0.3,            // 透明度を変化
-                    duration: 500,       // 0.5秒で消える
+                    alpha: 0.2,            // 透明度を変化
+                    duration: 700,       // 0.5秒で消える
                     ease: 'Linear',      // 線形アニメーション
                     yoyo: true,          // 往復アニメーション
                     repeat: -1           // 無限に繰り返す
@@ -65,8 +65,8 @@ export default class EndingScene extends Phaser.Scene {
             // 圏外スコアも点滅させる
             this.tweens.add({
                 targets: outOfRankingText,
-                alpha: 0.3,
-                duration: 500,
+                alpha: 0.2,
+                duration: 700,
                 ease: 'Linear',
                 yoyo: true,
                 repeat: -1
@@ -103,17 +103,5 @@ export default class EndingScene extends Phaser.Scene {
         this.input.keyboard.on('keydown-ENTER', () => {
             this.scene.start('NameInputScene');
         });
-
-        // クレジット
-        const text2 = {
-            ja: "音楽：魔王魂",
-            en: "Music : MaouDamashii"
-        };
-        this.add.text(800, 600, text2[window.currentLanguage], { 
-            font: '20px Arial', 
-            fill: '#ffffff', 
-            align: 'left',
-            wordWrap: { width: 600 }
-        }).setOrigin(1.0, 1.0);
     }
 }
