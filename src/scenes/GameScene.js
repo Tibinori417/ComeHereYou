@@ -68,6 +68,7 @@ export default class GameScene extends Phaser.Scene {
     const backgroundHeight = this.gridHeight * this.cellSize;
     this.background = this.add.tileSprite(0, 0, this.scale.width, this.scale.height, 'backgroundTile').setOrigin(0, 0);
     this.background.setScrollFactor(0); // 背景がカメラの動きに応じてスクロールするように設定
+    this.background.setDepth(-999);
 
     // 設定ボタン(歯車)画像を設定
     this.setting = this.add.image(790, 10, 'setting').setInteractive();
@@ -146,19 +147,20 @@ export default class GameScene extends Phaser.Scene {
     this.bgm.play();
 
     // ブラックホールのアニメーションを作成
-    this.anims.create({
-      key: 'blackhole_anim',
-      frames: this.anims.generateFrameNumbers('blackhole', { start: 0, end: 9 }),
-      frameRate: 10,
-      repeat: -1
-    });
+    if (!this.anims.exists('blackhole_anim')) {
+      this.anims.create({
+        key: 'blackhole_anim',
+        frames: this.anims.generateFrameNumbers('blackhole', { start: 0, end: 9 }),
+        frameRate: 10,
+        repeat: -1
+      });
+    }
 
     // 他のブロックをマップ上に配置
     this.createOtherBlocks();
   }
 
   update(time) {
-
     this.keyRepeatInterval = 60 - this.moveSpeed * 50;
 
     const keys = ['left', 'right', 'up', 'down'];
@@ -445,15 +447,13 @@ export default class GameScene extends Phaser.Scene {
     const completeBlocks = blocks.filter(b => b.toBeRemoved);
 
     if (completeBlocks.length > 0) {
+      this.timerEvent.paused = true; // 演出中はエネルギー消費ストップ
       this.enableInput = false;
 
-      let tweensCompleted = 0;
-      const totalTweens = completeBlocks.length;
-
       let effectLevel = 1;
-      if (this.earnedScore >= 18) effectLevel = 2;
-      if (this.earnedScore >= 66) effectLevel = 3;
-      effectLevel = 4;
+      if (this.earnedScore >= 11) effectLevel = 2;
+      if (this.earnedScore >= 27) effectLevel = 3;
+      if (this.earnedScore >= 66) effectLevel = 4;
 
       if (effectLevel === 1) {
         this.completeSE1.play();
@@ -463,94 +463,171 @@ export default class GameScene extends Phaser.Scene {
         this.completeSE3.play();
       } else if (effectLevel === 4) {
         this.completeSE4.play();
+        this.triggerBlackholeEffect(completeBlocks);
+        this.timerEvent.paused = false;
+        return;
+      }
 
-        const blackhole = this.add.sprite(400, 300, 'blackhole')
-          .setScrollFactor(0)
-          .setScale(0);
-        blackhole.depth = 10; // 他のスプライトより前面に表示
-        blackhole.play('blackhole_anim'); // アニメーションを再生
+      // 通常の消滅アニメーションを実行
+      this.animateBlocks(completeBlocks, effectLevel, () => {
+        this.updateScore(this.earnedScore);
+        this.removeMarkedBlocks(true);
+        this.enableInput = true;
+        this.separateBlocks();
+      });
 
-        // ブラックホールのアニメーション（拡大）
-        this.tweens.add({
-          targets: blackhole,
-          scale: 1,
-          duration: 2000,
-          ease: 'Power1',
-          onComplete: () => {
-              // ブロックをブラックホールに吸い込む
-              // this.absorbBlocksIntoBlackhole(blocks, blackhole);
+      this.timerEvent.paused = false;
+    }
+  }
+
+  animateBlocks(blocks, effectLevel, onCompleteCallback) {
+    let tweensCompleted = 0;
+    const totalTweens = blocks.length;
+
+    blocks.forEach(b => {
+      // レベルに応じたアニメーション設定
+      let tweenConfig = {
+        targets: b,
+        ease: 'Cubic.easeInOut',
+        duration: 300,
+        repeat: 0,
+        yoyo: false,
+        onComplete: () => {
+          tweensCompleted++;
+
+          if (tweensCompleted === totalTweens) {
+            onCompleteCallback();
           }
+        }
+      };
+
+      // レベルごとのエフェクトを設定
+      if (effectLevel === 1) {
+        // レベル1：点滅
+        tweenConfig.tint = { from: b.tintTopLeft, to: 0x000000 };
+        tweenConfig.duration = 50;
+        tweenConfig.repeat = 4;
+        tweenConfig.yoyo = true;
+        tweenConfig.alpha = { from: 1, to: 0.5 };
+      } else if (effectLevel === 2) {
+        // レベル2：だんだん小さく、回転しながら、ちょっと長め
+        tweenConfig.scale = { from: 0.8, to: 0 };
+        tweenConfig.angle = 360;
+        tweenConfig.duration = 400;
+      } else if (effectLevel === 3) {
+        // レベル3：パーティクルとカメラシェイクを追加
+        tweenConfig.scale = { from: 0.5, to: 0.2 };
+        tweenConfig.alpha = { from: 1, to: 0.5 };
+        tweenConfig.tint = { from: 0xffffff, to: 0xff4500 }; // オレンジレッド
+
+        // パーティクルエミッターを設定
+        const emitterLife = 1500;
+        const emitter = this.add.particles(0, 0, 'particle1', {
+          x: b.x,
+          y: b.y,
+          speed: { min: 100, max: 200 },
+          angle: { min: 0, max: 360 },
+          scale: { start: 0.2, end: 0 },
+          lifespan: emitterLife,
+          blendMode: 'ADD',
+          quantity: 1
+        });
+
+        emitter.explode(2);
+
+        this.time.delayedCall(emitterLife, () => {
+          emitter.stop();
+          emitter.destroy();
         });
       }
 
-      completeBlocks.forEach(b => {
-        // レベルに応じたアニメーション設定
-        let tweenConfig = {
-          targets: b,
-          ease: 'Cubic.easeInOut',
-          duration: 300,
-          repeat: 0,
-          yoyo: false,
-          onComplete: () => {
-            tweensCompleted++;
+      this.tweens.add(tweenConfig);
+    });
 
-            if (tweensCompleted === totalTweens) {
-                this.updateScore(this.earnedScore);
-                this.removeMarkedBlocks(true);
-                this.enableInput = true;
-                this.separateBlocks();
-            }
-          }
-        };
-
-        // レベルごとのエフェクトを設定
-        if (effectLevel === 1) {
-          // レベル1：点滅
-          tweenConfig.tint = { from: b.tintTopLeft, to: 0x000000 };
-          tweenConfig.duration = 50;
-          tweenConfig.repeat = 4;
-          tweenConfig.yoyo = true;
-          tweenConfig.alpha = { from: 1, to: 0.5 };
-        } else if (effectLevel === 2) {
-          // レベル2：だんだん小さく、回転しながら、ちょっと長め
-          tweenConfig.scale = { from: 0.8, to: 0 };
-          tweenConfig.angle = 360;
-          tweenConfig.duration = 400;
-        } else if (effectLevel === 3) {
-          // レベル3：パーティクルとカメラシェイクを追加
-          tweenConfig.scale = { from: 0.5, to: 0.2 };
-          tweenConfig.alpha = { from: 1, to: 0.5 };
-          tweenConfig.tint = { from: 0xffffff, to: 0xff4500 }; // オレンジレッド
-
-          // パーティクルエミッターを設定
-          const emitterLife = 1500;
-          const emitter = this.add.particles(0, 0, 'particle1', {
-            x: b.x,
-            y: b.y,
-            speed: { min: 100, max: 200 },
-            angle: { min: 0, max: 360 },
-            scale: { start: 0.2, end: 0 },
-            lifespan: emitterLife,
-            blendMode: 'ADD',
-            quantity: 1
-          });
-
-          emitter.explode(2);
-
-          this.time.delayedCall(emitterLife, () => {
-            emitter.stop();
-            emitter.destroy();
-          });
-        }
-
-        this.tweens.add(tweenConfig);
-      });
-
-      // レベル3の場合、カメラシェイクを実行
-      if (effectLevel === 3) {
-        this.cameras.main.shake(700, 0.01);
-      }
+    // レベル3の場合、カメラシェイクを実行
+    if (effectLevel === 3) {
+      this.cameras.main.shake(700, 0.01);
     }
+  }
+
+  triggerBlackholeEffect(blocks) {
+    // ブラックホールの位置を計算（ブロックの中心位置）
+    let centerX = 0;
+    let centerY = 0;
+    blocks.forEach(b => {
+      centerX += b.x;
+      centerY += b.y;
+    });
+    centerX /= blocks.length;
+    centerY /= blocks.length;
+
+    // ブラックホールのスプライトを作成し、アニメーションを再生
+    const blackhole = this.add.sprite(centerX, centerY, 'blackhole').setScale(0);
+    blackhole.depth = -500; // 他のスプライトより前面に表示
+    blackhole.play('blackhole_anim'); // アニメーションを再生
+
+    // ブラックホールのアニメーション（拡大）
+    this.tweens.add({
+      targets: blackhole,
+      scale: 1,
+      duration: 1500,
+      angle: 270,
+      ease: 'Power1',
+      onComplete: () => {
+        // ブロックをブラックホールに吸い込む
+        this.absorbBlocksIntoBlackhole(blocks, blackhole);
+      } 
+    });
+  }
+
+  absorbBlocksIntoBlackhole(blocks, blackhole) {
+    let tweensCompleted = 0;
+    const totalTweens = blocks.length;
+
+    blocks.forEach(b => {
+      this.tweens.add({
+        targets: b,
+          x: b.x + (Math.random() < 0.5 ? -2 : 2), // X方向にランダムに-2または2
+          y: b.y + (Math.random() < 0.5 ? -2 : 2), // Y方向にランダムに-2または2
+          duration: Phaser.Math.Between(100, 110), // 揺れる速度もランダム
+          yoyo: true,
+          repeat: Phaser.Math.Between(3, 6), // 継続的に揺れる
+          onComplete: () => {
+            this.tweens.add({
+              targets: b,
+              x: blackhole.x,
+              y: blackhole.y,
+              scale: 0,
+              alpha: 0,
+              angle: 360,
+              duration: 700,
+              ease: 'Cubic.easeIn',
+              onComplete: () => {
+                tweensCompleted++;
+                if (tweensCompleted === totalTweens) {
+                  // ブラックホールを縮小させて消す
+                  this.tweens.add({
+                    targets: blackhole,
+                    scale: 0,
+                    duration: 1000,
+                    angle: 270,
+                    ease: 'Power1',
+                    onComplete: () => {
+                      blackhole.stop(); // アニメーションを停止
+                      blackhole.destroy(); // ブラックホールを削除
+                      // スコア更新や他の処理を実行
+                      this.updateScore(this.earnedScore);
+                      this.removeMarkedBlocks(true);
+                      this.enableInput = true;
+                      this.separateBlocks();
+                    }
+                  });
+                }
+              }
+            });
+          }
+      })
+    });
   }
 
   separateBlocks() {    // 分離処理　wallブロックと接していないブロック群を分離する　深さ優先探索

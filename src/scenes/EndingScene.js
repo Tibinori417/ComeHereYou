@@ -101,6 +101,8 @@ export default class EndingScene extends Phaser.Scene {
         });
 
         this.input.keyboard.on('keydown-ENTER', () => {
+            this.sound.stopAll();
+            this.backSE.play();
             this.scene.start('NameInputScene');
         });
     }
