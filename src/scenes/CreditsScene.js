@@ -42,8 +42,8 @@ export default class CreditsScene extends Phaser.Scene {
             `,
             en: `
             【Game Development】
-            Programming: ChibiNori
-            Design: ChibiNori
+            Programming: TibiNori
+            Design: TibiNori
             Sound Effects: Maou Damashii
             BGM: Maou Damashii
 

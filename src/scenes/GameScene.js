@@ -18,7 +18,9 @@ export default class GameScene extends Phaser.Scene {
     this.load.audio('rotateSE', 'assets/rotateSound.mp3');
     this.load.audio('joinSE', 'assets/joinSound.mp3');
     this.load.audio('cantRotateSE', 'assets/cantRotateSound.mp3');
-    this.load.audio('completeSE', 'assets/completeSound.mp3');
+    this.load.audio('completeSE1', 'assets/completeSound1.mp3');
+    this.load.audio('completeSE2', 'assets/completeSound2_maou_se_magical02.mp3');
+    this.load.audio('completeSE3', 'assets/completeSound3_maou_se_magical21.mp3');
     this.load.audio('bgm', 'assets/bgm_gameScene3_maou_game_rock52.mp3');
   }
 
@@ -36,6 +38,7 @@ export default class GameScene extends Phaser.Scene {
     this.additionalEnergyConsumption = 0;   // 本体の大きさによる追加で消費するエネルギー
     this.myBlocksWidth;
     this.myBlocksHeight;
+    this.earnedScore;
 
     // グリッドのサイズを設定
     this.gridWidth = 1000;
@@ -95,7 +98,7 @@ export default class GameScene extends Phaser.Scene {
     this.scoreText = this.add.text(10, 10, `Score: ${this.score}`, { fontSize: '24px', fill: '#FFFFFF' }).setScrollFactor(0);
 
     // エネルギーの設定
-    this.maxLife = 3; // MAXは30秒分
+    this.maxLife = 30; // MAXは30秒分
     this.lifeBlocks = new LifeBlocks(this, 195, 22, this.lifeBlockSize).setScrollFactor(0);
     for (let b = 0; b < this.maxLife; b++) {
       this.lifeBlocks.addBlock(this);
@@ -126,7 +129,9 @@ export default class GameScene extends Phaser.Scene {
     this.rotateSE = this.sound.add('rotateSE');
     this.joinSE = this.sound.add('joinSE');
     this.cantRotateSE = this.sound.add('cantRotateSE');
-    this.completeSE = this.sound.add('completeSE');
+    this.completeSE1 = this.sound.add('completeSE1');
+    this.completeSE2 = this.sound.add('completeSE2');
+    this.completeSE3 = this.sound.add('completeSE3');
 
     // BGM
     this.bgm = this.sound.add('bgm', { volume: 1.0, loop: true});
@@ -399,8 +404,7 @@ export default class GameScene extends Phaser.Scene {
     });
 
     if (completeCnt > 0) {
-      const addScorePoint = completeCnt * completeCnt + 2;
-      this.updateScore(addScorePoint);
+      this.earnedScore = completeCnt * completeCnt + 2;
     }
     
   }
@@ -428,31 +432,77 @@ export default class GameScene extends Phaser.Scene {
       let tweensCompleted = 0;
       const totalTweens = completeBlocks.length;
 
-      this.completeSE.play();
+      let effectLevel = 1;
+      if (this.earnedScore >= 27) effectLevel = 2;
+      if (this.earnedScore >= 102) effectLevel = 3;
+
+      if (effectLevel === 1) {
+        this.completeSE1.play();
+      } else if (effectLevel === 2) {
+        this.completeSE2.play();
+      } else if (effectLevel === 3) {
+        this.completeSE3.play();
+      }
 
       completeBlocks.forEach(b => {
-        this.tweens.add({
+        // レベルに応じたアニメーション設定
+        let tweenConfig = {
           targets: b,
-          tint: {
-            from: b.tintTopLeft,
-            to: 0x000000
-          },
           ease: 'Cubic.easeInOut',
-          duration: 50,
-          repeat: 4,
-          yoyo: true,
+          duration: 200,
+          repeat: 0,
+          yoyo: false,
           onComplete: () => {
             tweensCompleted++;
 
             if (tweensCompleted === totalTweens) {
-              this.removeMarkedBlocks();
-              this.enableInput = true;
-              this.separateBlocks();  
+                this.updateScore(this.earnedScore);
+                this.removeMarkedBlocks();
+                this.enableInput = true;
+                this.separateBlocks();
             }
           }
-        });
+        };
+
+        // レベルごとのエフェクトを設定
+        if (effectLevel === 1) {
+          // レベル1：シンプルな縮小アニメーション
+          tweenConfig.scale = { from: 1, to: 0 };
+          tweenConfig.alpha = { from: 1, to: 0 };
+        } else if (effectLevel === 2) {
+          // レベル2：色変化と縮小
+          tweenConfig.scale = { from: 1, to: 0 };
+          tweenConfig.alpha = { from: 1, to: 0 };
+          tweenConfig.tint = { from: 0xffffff, to: 0xffd700 }; // ゴールド色
+        } else if (effectLevel === 3) {
+          // レベル3：パーティクルとカメラシェイクを追加
+          tweenConfig.scale = { from: 1, to: 0 };
+          tweenConfig.alpha = { from: 1, to: 0 };
+          tweenConfig.tint = { from: 0xffffff, to: 0xff4500 }; // オレンジレッド
+          this.createParticles(b.x, b.y);
+        }
+
+        this.tweens.add(tweenConfig);
       });
+
+      // レベル3の場合、カメラシェイクを実行
+      if (effectLevel === 3) {
+        this.cameras.main.shake(300, 0.02);
+      }
     }
+  }
+
+  createParticles(x, y) {   // パーティクルエフェクトを生成する関数
+    const particles = this.add.particles('particleImage'); // 'particleImage'は事前にロードした画像キー
+    const emitter = particles.createEmitter({
+      x: x,
+      y: y,
+      speed: { min: -200, max: 200 },
+      angle: { min: 0, max: 360 },
+      scale: { start: 0.5, end: 0 },
+      lifespan: 500,
+      blendMode: 'ADD'
+    });
   }
 
   separateBlocks() {    // 分離処理　wallブロックと接していないブロック群を分離する　深さ優先探索
@@ -554,7 +604,30 @@ export default class GameScene extends Phaser.Scene {
 
   updateScore(points) {
     this.score += points;
+    this.showFloatingScore(points);
     this.scoreText.setText(`Score: ${this.score}`);
+  }
+
+  showFloatingScore(score) {
+    const wallBlock = this.blocks.find( block => block.type === 'wall' );
+    const x = wallBlock.gridX * this.cellSize;
+    const y = wallBlock.gridY * this.cellSize;
+
+    const earnedScoreText = this.add.text(x, y, `+${score}`, {
+      font: '24px Arial',
+      fill: '#ffffff'
+    }).setOrigin(0.5);
+
+    this.tweens.add({
+      targets: earnedScoreText,
+      y: y - 100,
+      alpha: 0,
+      duration: 3000,
+      ease: 'Linear',
+      onComplete: () => {
+        earnedScoreText.destroy();
+      }
+    });
   }
 
   outputCenter() {  // 本体の中心座標を求める関数
