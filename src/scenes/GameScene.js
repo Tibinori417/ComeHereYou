@@ -83,6 +83,9 @@ export default class GameScene extends Phaser.Scene {
     this.setting.on('pointerout', () => {
       this.input.manager.canvas.style.cursor = 'default';
     });
+    this.input.keyboard.on('keydown-ESC', () => {
+      this.toggleSettingsMenu(); // ESCキーで設定シーン呼び出し
+    });
 
     // 設定値を初期化
     this.registry.set('movespeed', 0.5); // 移動速度
@@ -464,7 +467,6 @@ export default class GameScene extends Phaser.Scene {
       } else if (effectLevel === 4) {
         this.completeSE4.play();
         this.triggerBlackholeEffect(completeBlocks);
-        this.timerEvent.paused = false;
         return;
       }
 
@@ -473,10 +475,9 @@ export default class GameScene extends Phaser.Scene {
         this.updateScore(this.earnedScore);
         this.removeMarkedBlocks(true);
         this.enableInput = true;
+        this.timerEvent.paused = false;
         this.separateBlocks();
       });
-
-      this.timerEvent.paused = false;
     }
   }
 
@@ -619,6 +620,7 @@ export default class GameScene extends Phaser.Scene {
                       this.updateScore(this.earnedScore);
                       this.removeMarkedBlocks(true);
                       this.enableInput = true;
+                      this.timerEvent.paused = false;
                       this.separateBlocks();
                     }
                   });
@@ -689,6 +691,9 @@ export default class GameScene extends Phaser.Scene {
   }
 
   updateTimer() {   // ブロックエネルギー消費、this.energyConsumptionIntervalの時間毎に呼び出される
+    if (this.playerName === "debugmode") {
+      return;
+    }
     this.energyConsumptionInterval -= 2;
     this.lifeBlocks.removeAt(0);
     this.lifeBlocks.list.forEach((block, index) => {

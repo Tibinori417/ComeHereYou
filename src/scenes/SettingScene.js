@@ -103,7 +103,11 @@ export default class SettingScene extends Phaser.Scene {
       if (x < this.scale.width / 2 - menuBG.x / 2 || x > this.scale.width / 2 + menuBG.x / 2 || y < this.scale.height / 2 - menuBG.y / 2 || y > this.scale.height / 2 + menuBG.y / 2) {
         this.closeMenu();
       }
-    
+    });
+
+    // Escキーで設定メニューを閉じる
+    this.input.keyboard.on('keydown-ESC', () => {
+      this.closeMenu();
     });
   }
 
