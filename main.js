@@ -49,6 +49,13 @@ function resumeAudioContext() {
   }
 }
 
+document.addEventListener('DOMContentLoaded', () => {
+  // 全体にフォーカスを設定しないようにする
+  document.body.addEventListener('mousedown', (event) => {
+      event.preventDefault(); // デフォルト動作を防ぐ
+  });
+});
+
 // ユーザー操作を検出するためのイベントリスナーを設定
 const startMessage = document.getElementById('startMessage');
 const phaserGameDiv = document.getElementById('phaser-game');
