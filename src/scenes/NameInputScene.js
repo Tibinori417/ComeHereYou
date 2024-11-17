@@ -164,6 +164,7 @@ export default class NameInputScene extends Phaser.Scene {
                    ((event.keyCode >= 48 && event.keyCode <= 90) || // 数字とアルファベット
                     (event.keyCode >= 96 && event.keyCode <= 105))) { // テンキー
             this.playerName += event.key;
+            this.typingSE.play();
         }
 
         this.updateDisplay();
@@ -177,7 +178,6 @@ export default class NameInputScene extends Phaser.Scene {
             this.charCountText.setColor('#ff0000');
         } else {
             this.charCountText.setColor('#cccccc');
-            this.typingSE.play();
         }
 
         this.errorText.setVisible(false);
